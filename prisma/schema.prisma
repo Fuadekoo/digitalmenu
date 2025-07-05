@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id             String   @id @default(cuid())
+  username       String
+  phone          String   @unique
+  password       String
+  role           String   @default("unauthorized") // user, admin, waiter
+  isActive       Boolean  @default(true)
+  clientPassCode String?  @unique
+  chatId         String?  @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  order          order[]
+}
+
+model productCategory {
+  id        String    @id @default(cuid())
+  cname     String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  product   product[]
+}
+
+model product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  photo       String
+  price       Float
+  quantity    Int
+  isAvailable Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  categoryId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category  productCategory @relation(fields: [categoryId], references: [id])
+  orderItem orderItem[]
+}
+
+model waiters {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  table     table[]
+}
+
+model table {
+  id         String   @id @default(cuid())
+  name       String
+  tNumber    Int      @unique
+  waiterId   String?
+  waiter     waiters? @relation(fields: [waiterId], references: [id])
+  isOccupied Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  order      order[]
+}
+
+model order {
+  id         String      @id @default(cuid())
+  orderCode  String      @default(cuid())
+  tableId    String?
+  totalPrice Float
+  location   String?
+  phone      String?
+  clientName String?
+  status     String      @default("pending")
+  table      table?      @relation(fields: [tableId], references: [id])
+  orderItems orderItem[]
+  createdBy  String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  user       user?       @relation(fields: [userId], references: [id])
+  userId     String?
+}
+
+model orderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int    @default(1)
+  price     Float
+
+  order     order    @relation(fields: [orderId], references: [id])
+  product   product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model feedBack {
+  id         String   @id @default(cuid())
+  clientName String
+  phone      String?
+  message    String
+  rate       Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
