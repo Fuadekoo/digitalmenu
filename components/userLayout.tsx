@@ -9,7 +9,7 @@ import {
   DropdownTrigger,
   Link,
 } from "@heroui/react";
-// import { ShareIcon } from "lucide-react";
+import { BellIcon } from "lucide-react";
 // import Theme from "./theme";
 import { AlignLeft, ChevronLeft, ChevronRight, DoorOpen } from "lucide-react";
 import { useState } from "react";
@@ -157,29 +157,9 @@ function Header({
       >
         <AlignLeft className="size-7" />
       </Button>
-      {/* <div className="flex-1 text-foreground-500/80 text-sm">
-        My Invitation: {data && data.user?.myCode}
-      </div> */}
-      {/* <Theme /> */}
-      {/* <button
-        className="text-primary-500"
-        onClick={async () => {
-          if (data && data.user?.myCode) {
-            const url = `${process.env.NEXT_PUBLIC_BASE_URL}/en/signup?invitationCode=${data.user.myCode}`;
-            await navigator.clipboard.writeText(url);
-            addToast({
-              title: "Copied!",
-              description: "Invitation link copied to clipboard.",
-              // status: "success",
-            });
-          }
-        }}
-        title="Copy invitation link"
-        type="button"
-      >
-        <ShareIcon />
-      </button> */}
-      <User sidebar={true} />
+
+      <BellIcon />
+      {/* <User sidebar={true} /> */}
     </header>
   );
 }

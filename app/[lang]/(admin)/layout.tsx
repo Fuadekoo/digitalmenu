@@ -14,15 +14,15 @@ import {
 
 const menu = [
   { label: "Dashboard", url: "dashboard", icon: <Home size={18} /> },
-  { label: "Customers", url: "customer", icon: <User size={18} /> },
+  { label: "Catagory", url: "catagory", icon: <User size={18} /> },
   {
-    label: "Customer Support",
-    url: "support",
+    label: "Products",
+    url: "products",
     icon: <User size={18} />,
   },
-  { label: "Payments", url: "payment", icon: <CreditCard size={18} /> },
-  { label: "Profit Cards", url: "profit", icon: <Package size={18} /> },
-  { label: "Product", url: "product", icon: <ShoppingCart size={18} /> },
+  { label: "Tables", url: "tables", icon: <CreditCard size={18} /> },
+  { label: "Waiters", url: "waiters", icon: <Package size={18} /> },
+  { label: "Orders", url: "orders", icon: <ShoppingCart size={18} /> },
   { label: "Notifications", url: "notification", icon: <Folder size={18} /> },
   { label: "Profile", url: "profile", icon: <User size={18} /> },
   { label: "Settings", url: "settings", icon: <Settings size={18} /> },

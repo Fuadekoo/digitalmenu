@@ -5,18 +5,14 @@ import { redirect } from "next/navigation";
 import { Home, Package, CreditCard, User, Bell, Settings } from "lucide-react";
 
 const menu = [
-  { label: "Dashboard", url: "dashboard", icon: <Home size={18} /> },
-  // { label: "Product", url: "product", icon: <ShoppingCart size={18} /> },
-  { label: "Orders", url: "order", icon: <Package size={18} /> },
-  { label: "Wallet", url: "wallet", icon: <CreditCard size={18} /> },
-  { label: "Profile", url: "profile", icon: <User size={18} /> },
+  { label: "Home", url: "home", icon: <Home size={18} /> },
+  { label: "Cart", url: "cart", icon: <Package size={18} /> },
   {
     label: "Notification",
     url: "notification",
-    icon: <Bell size={18} />,
+    icon: <CreditCard size={18} />,
   },
-  { label: "Settings", url: "settings", icon: <Settings size={18} /> },
-  // Add more menu items as needed
+  { label: "About", url: "about", icon: <User size={18} /> },
 ];
 
 export default async function Layout({
