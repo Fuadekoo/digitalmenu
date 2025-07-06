@@ -41,3 +41,47 @@ export async function authenticate(
 
   return { message: "Login successful" };
 }
+
+
+export async function logout() {
+  try {
+    await signOut({ redirect: false });
+    redirect("/en/login");
+    return { message: "Logout successful", status: true };
+  } catch (error) {
+    console.error("Logout failed:", error);
+    return { message: "Logout failed", status: false };
+  }
+}
+export async function checkAuthentication() {
+  const session = await signIn("credentials", { redirect: false });
+  if (!session || !session.user) {
+    redirect("/en/login");
+  }
+  return session;
+}
+
+export async function isAuthenticated() {
+  const session = await auth();
+  if (!session || !session.user || !session.user.id) {
+    return false;
+  }
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!user) {
+    return false;
+  }
+  return true;
+}
+
+export async function loginData() {
+  const session = await auth();
+  if (!session || !session.user || !session.user.id) {
+    return "Unauthorized";
+  }
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!user) {
+    return "User not found";
+  }
+  return user;
+}
+  

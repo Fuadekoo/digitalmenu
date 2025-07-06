@@ -43,7 +43,7 @@ function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center text-green-600 mb-6">
-          Welcome to walmart
+          Welcome to Digital Menu
         </h1>
         <form onSubmit={handleSubmit(action)} className="space-y-5">
           <div>
@@ -81,27 +81,6 @@ function LoginPage() {
           >
             {loading ? <Loading /> : "Login"}
           </Button>
-          <div className="mt-4 text-center">
-            <span className="text-gray-600">Don&apos;t have an account? </span>
-            <Link
-              href="/en/signup"
-              className="text-green-600 font-semibold hover:underline"
-            >
-              Sign Up
-            </Link>
-          </div>
-          <div className="mt-2 text-center">
-            <span className="text-gray-500 text-sm">
-              If you have any problem in the system, please{" "}
-              <Link
-                href="/en/contact"
-                className="text-blue-600 font-semibold hover:underline"
-              >
-                Contact Us
-              </Link>
-              .
-            </span>
-          </div>
         </form>
       </div>
     </div>
