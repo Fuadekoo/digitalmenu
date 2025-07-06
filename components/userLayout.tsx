@@ -9,7 +9,7 @@ import {
   DropdownTrigger,
   Link,
 } from "@heroui/react";
-import { ShareIcon } from "lucide-react";
+// import { ShareIcon } from "lucide-react";
 // import Theme from "./theme";
 import { AlignLeft, ChevronLeft, ChevronRight, DoorOpen } from "lucide-react";
 import { useState } from "react";
@@ -145,7 +145,7 @@ function Header({
   sidebar: boolean;
   setSidebar: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-//   const [data, ,] = useAction(getUser, [true, () => {}]);
+  //   const [data, ,] = useAction(getUser, [true, () => {}]);
   return (
     <header className="z-30 h-12 p-2 flex gap-4 items-center max-lg:shadow-sm bg-gray-500/10">
       <Button

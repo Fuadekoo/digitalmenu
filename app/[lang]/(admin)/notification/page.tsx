@@ -3,7 +3,7 @@ import React from "react";
 function Page() {
   return (
     <div>
-      <h1>this is a main page</h1>
+      <h1>this is a notification page</h1>
     </div>
   );
 }
