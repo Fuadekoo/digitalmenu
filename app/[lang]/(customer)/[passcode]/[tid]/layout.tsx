@@ -1,5 +1,5 @@
 import React from "react";
-import { auth } from "@/lib/auth";
+import { customerAuth } from "@/actions/customer/clientauth";
 import UserLayout from "@/components/userLayout";
 import { redirect } from "next/navigation";
 import { Home, Package, CreditCard, User, Bell, Settings } from "lucide-react";
@@ -21,12 +21,14 @@ const menu = [
 
 export default async function Layout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { passcode: string; tid: string };
 }) {
-  const session = await auth();
-  // if the login user is not USER then redirect to page is forbideen page or 404 page
-  if (!session || !session.user || session.user.role !== "USER") {
+  // Check customer auth using passcode and tid from URL
+  const isAuth = await customerAuth(params.passcode, params.tid);
+  if (!isAuth) {
     redirect("/en/forbidden");
   }
 

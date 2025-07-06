@@ -34,9 +34,16 @@ const authConfig = {
     signOut: "/signout",
   },
   callbacks: {
-    authorized: async () => {
-      return true;
+    authorized: async ({ auth, request: { nextUrl } }) => {
+      if (auth) {
+        if (nextUrl.pathname.startsWith("/en/signin")) {
+          return Response.redirect(new URL("/en/dashboard", nextUrl));
+        } else return true;
+      } else if (nextUrl.pathname.startsWith("/en/dashboard")) {
+        return false;
+      } else return true;
     },
+
     jwt: async ({ token, user }) => {
       return { ...token, ...user };
     },

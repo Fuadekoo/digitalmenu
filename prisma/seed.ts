@@ -1,13 +1,15 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
   // Admin user
+  const hashedPassword = bcrypt.hashSync("admin123", 10);
   await prisma.user.create({
     data: {
       username: "System Admin",
-      phone: "0942303571",
-      password: "admin123", // Hash in production!
+      phone: "0910737199",
+      password: hashedPassword, // Hashed password
       role: "admin",
       clientPassCode: "2090",
       chatId: "631321369",
@@ -100,6 +102,70 @@ async function main() {
       },
     ],
   });
+
+  // Orders
+  const table1 = await prisma.table.findFirst({ where: { tNumber: 1 } });
+  const table2 = await prisma.table.findFirst({ where: { tNumber: 2 } });
+  const pizza = await prisma.product.findFirst({ where: { name: "Margherita Pizza" } });
+  const pepperoni = await prisma.product.findFirst({ where: { name: "Pepperoni Pizza" } });
+  const coke = await prisma.product.findFirst({ where: { name: "Coke" } });
+  const water = await prisma.product.findFirst({ where: { name: "Water" } });
+
+  // Order 1
+  if (table1 && pizza && coke) {
+    await prisma.order.create({
+      data: {
+        tableId: table1.id,
+        totalPrice: pizza.price * 2 + coke.price,
+        clientName: "Guest 1",
+        phone: "0911222333",
+        status: "pending",
+        createdBy: "guest",
+        orderItems: {
+          create: [
+            {
+              productId: pizza.id,
+              quantity: 2,
+              price: pizza.price,
+            },
+            {
+              productId: coke.id,
+              quantity: 1,
+              price: coke.price,
+            },
+          ],
+        },
+      },
+    });
+  }
+
+  // Order 2
+  if (table2 && pepperoni && water) {
+    await prisma.order.create({
+      data: {
+        tableId: table2.id,
+        totalPrice: pepperoni.price + water.price * 3,
+        clientName: "Guest 2",
+        phone: "0911444555",
+        status: "pending",
+        createdBy: "guest",
+        orderItems: {
+          create: [
+            {
+              productId: pepperoni.id,
+              quantity: 1,
+              price: pepperoni.price,
+            },
+            {
+              productId: water.id,
+              quantity: 3,
+              price: water.price,
+            },
+          ],
+        },
+      },
+    });
+  }
 
   console.log("Seed data created!");
 }
