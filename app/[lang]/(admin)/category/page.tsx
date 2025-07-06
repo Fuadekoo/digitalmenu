@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import useAction from "@/hooks/useAction";
+import useAction from "@/hooks/useActions";
 import {
   getCategory,
   deleteCategory,

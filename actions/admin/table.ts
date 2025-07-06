@@ -27,8 +27,30 @@ export async function createTable(data: z.infer<typeof tableSchema>) {
   });
 }
 
-export async function getTables() {
-  return await prisma.table.findMany({
+export async function getTables(
+  search?: string,
+  page?: number,
+  pageSize?: number
+) {
+  // Default values for pagination
+  page = page || 1;
+  pageSize = pageSize || 10;
+  const where = search
+    ? {
+        OR: [
+          { name: { contains: search } },
+          ...(Number.isNaN(Number(search))
+            ? []
+            : [{ tNumber: Number(search) }]),
+        ],
+      }
+    : {};
+
+  const totalRows = await prisma.table.count({ where });
+  const totalPages = Math.ceil(totalRows / pageSize);
+
+  const data = await prisma.table.findMany({
+    where,
     include: {
       waiter: {
         select: {
@@ -36,7 +58,22 @@ export async function getTables() {
         },
       },
     },
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+    orderBy: { tNumber: "asc" },
   });
+
+  return {
+    data,
+    pagination: {
+      currentPage: page,
+      totalPages: totalPages,
+      itemsPerPage: pageSize,
+      totalRecords: totalRows,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    },
+  };
 }
 
 export async function updateTable(

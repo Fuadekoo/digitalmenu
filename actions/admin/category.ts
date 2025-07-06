@@ -3,12 +3,49 @@ import prisma from "@/lib/db";
 import { z } from "zod";
 import { categorySchema } from "@/lib/zodSchema";
 
-export async function getCategory() {
+export async function getCategory(
+  search?: string,
+  page?: number,
+  pageSize?: number
+) {
   try {
-    const categories = await prisma.productCategory.findMany({
-      orderBy: { createdAt: "desc" },
+    // Default values for pagination
+    page = page || 1;
+    pageSize = pageSize || 10;
+
+    // Count total records
+    const totalRows = await prisma.productCategory.count({
+      where: {
+        OR: search
+          ? [{ cname: { contains: search } }]
+          : undefined,
+      },
     });
-    return categories;
+
+    const totalPages = Math.ceil(totalRows / pageSize);
+
+    const data = await prisma.productCategory.findMany({
+      orderBy: { createdAt: "desc" },
+      where: {
+        OR: search
+          ? [{ cname: { contains: search } }]
+          : undefined,
+      },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return {
+      data,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        itemsPerPage: pageSize,
+        totalRecords: totalRows,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
   } catch (error) {
     console.error("Error fetching categories:", error);
     throw new Error("Failed to fetch categories");

@@ -38,14 +38,48 @@ export async function createProduct(data: z.infer<typeof productSchema>) {
   return product;
 }
 
-export async function getProducts() {
-  const products = await prisma.product.findMany({
+export async function getProducts(
+  search?: string,
+  page?: number,
+  pageSize?: number
+) {
+  // Default values for pagination
+  page = page || 1;
+  pageSize = pageSize || 10;
+
+  const where = search
+    ? {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+        ],
+      }
+    : {};
+
+  const totalRows = await prisma.product.count({ where });
+  const totalPages = Math.ceil(totalRows / pageSize);
+
+  const data = await prisma.product.findMany({
+    where,
     include: {
       category: true,
     },
     orderBy: { createdAt: "desc" },
+    skip: (page - 1) * pageSize,
+    take: pageSize,
   });
-  return products;
+
+  return {
+    data,
+    pagination: {
+      currentPage: page,
+      totalPages: totalPages,
+      itemsPerPage: pageSize,
+      totalRecords: totalRows,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    },
+  };
 }
 
 export async function deleteProduct(id: string) {
@@ -102,13 +136,50 @@ export async function getProductById(id: string) {
   });
   return product;
 }
-export async function getFeaturedProducts() {
-  const products = await prisma.product.findMany({
-    where: { isFeatured: true, isAvailable: true },
+export async function getFeaturedProducts(
+  search?: string,
+  page?: number,
+  pageSize?: number
+) {
+  // Default values for pagination
+  page = page || 1;
+  pageSize = pageSize || 10;
+
+  const where = {
+    isFeatured: true,
+    isAvailable: true,
+    ...(search
+      ? {
+          OR: [
+            { name: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+  };
+
+  const totalRows = await prisma.product.count({ where });
+  const totalPages = Math.ceil(totalRows / pageSize);
+
+  const data = await prisma.product.findMany({
+    where,
     include: {
       category: true,
     },
     orderBy: { createdAt: "desc" },
+    skip: (page - 1) * pageSize,
+    take: pageSize,
   });
-  return products;
+
+  return {
+    data,
+    pagination: {
+      currentPage: page,
+      totalPages: totalPages,
+      itemsPerPage: pageSize,
+      totalRecords: totalRows,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    },
+  };
 }
