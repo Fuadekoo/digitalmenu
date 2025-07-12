@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import useAction from "@/hooks/useActions";
 import {
   getTables,
+  getWaiterData,
   getTableQRCode,
   deleteTable,
   createTable,
@@ -28,6 +29,11 @@ interface TableItem {
   createdAt?: string;
 }
 
+interface WaiterItem {
+  id: string;
+  name: string;
+}
+
 interface ColumnDef {
   key: string;
   label: string;
@@ -44,6 +50,7 @@ function Page() {
     reset,
     setValue,
     formState: { errors },
+    watch,
   } = useForm<z.infer<typeof tableSchema>>({
     resolver: zodResolver(tableSchema),
   });
@@ -57,6 +64,11 @@ function Page() {
     search,
     page,
     pageSize
+  );
+
+  const [waiterData, refreshWaiters, isLoadingWaiters] = useAction(
+    getWaiterData,
+    [true, () => {}]
   );
 
   const [, executeDeleteTable, isLoadingDelete] = useAction(deleteTable, [
@@ -118,6 +130,43 @@ function Page() {
     },
   ]);
 
+  // Generate PDF for a single table's QR code
+  const handleDownloadSingleQrPdf = async (table: TableItem) => {
+    const doc = new jsPDF();
+
+    // Get QR code string for this table
+    const qrCodeString = await getTableQRCode(table.id.toString());
+    // Generate QR code image
+    const qrDataUrl = await QRCode.toDataURL(qrCodeString);
+
+    // Centered title
+    doc.setFontSize(18);
+    doc.text(`Table QR Code`, doc.internal.pageSize.getWidth() / 2, 20, { align: "center" });
+
+    // Table info box
+    doc.setFontSize(12);
+    doc.setDrawColor(200, 200, 200);
+    doc.setFillColor(245, 245, 245);
+    doc.roundedRect(20, 30, 170, 25, 5, 5, 'F');
+    doc.text(`Name: ${table.name}`, 25, 40);
+    doc.text(`Number: ${table.tNumber ?? "-"}`, 25, 50);
+
+    // Waiter info
+    if (table.waiterId && waiterData) {
+      const waiter = waiterData.find((w: WaiterItem) => w.id === table.waiterId);
+      if (waiter) {
+        doc.text(`Waiter: ${waiter.name}`, 120, 40);
+      }
+    }
+
+    // QR code centered below info
+    const qrSize = 80;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    doc.addImage(qrDataUrl, "PNG", (pageWidth - qrSize) / 2, 65, qrSize, qrSize);
+
+    doc.save(`table-${table.tNumber || table.name}-qrcode.pdf`);
+  };
+
   const handleDeleteTable = async (id: string | number) => {
     if (window.confirm("Are you sure you want to delete this table?")) {
       await executeDeleteTable(id.toString());
@@ -145,22 +194,6 @@ function Page() {
     } else {
       tableAction({ name, tNumber, waiterId });
     }
-  };
-
-  // Generate PDF for a single table's QR code
-  const handleDownloadSingleQrPdf = async (table: TableItem) => {
-    const doc = new jsPDF();
-
-    // Get QR code string for this table
-    const qrCodeString = await getTableQRCode(table.id.toString());
-    // Generate QR code image
-    const qrDataUrl = await QRCode.toDataURL(qrCodeString);
-
-    doc.text(`Table Name: ${table.name}`, 10, 10);
-    doc.text(`Table Number: ${table.tNumber}`, 10, 20);
-    doc.addImage(qrDataUrl, "PNG", 10, 30, 40, 40);
-
-    doc.save(`table-${table.tNumber || table.name}-qrcode.pdf`);
   };
 
   const rows = (tableData?.data || []).map((table) => ({
@@ -198,8 +231,13 @@ function Page() {
     },
     {
       key: "waiterId",
-      label: "Waiter ID",
-      renderCell: (item) => item.waiterId,
+      label: "Waiter",
+      renderCell: (item) => {
+        const waiter = waiterData?.find(
+          (w: WaiterItem) => w.id === item.waiterId
+        );
+        return waiter ? waiter.name : item.waiterId;
+      },
     },
     {
       key: "createdAt",
@@ -308,12 +346,21 @@ function Page() {
                     {errors.tNumber.message}
                   </span>
                 )}
-                <input
+                <select
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Waiter ID"
                   {...register("waiterId")}
-                  disabled={isLoadingCreate || isLoadingUpdate}
-                />
+                  disabled={
+                    isLoadingCreate || isLoadingUpdate || isLoadingWaiters
+                  }
+                  defaultValue={watch("waiterId") || ""}
+                >
+                  <option value="">Select Waiter</option>
+                  {waiterData?.map((waiter: WaiterItem) => (
+                    <option key={waiter.id} value={waiter.id}>
+                      {waiter.name}
+                    </option>
+                  ))}
+                </select>
                 {errors.waiterId && (
                   <span className="text-red-500 text-xs">
                     {errors.waiterId.message}

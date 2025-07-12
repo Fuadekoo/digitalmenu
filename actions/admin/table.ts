@@ -192,3 +192,15 @@ export async function getTableQRCode(id: string) {
     );
   }
 }
+
+export async function getWaiterData() {
+  const waiters = await prisma.waiters.findMany({
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  return waiters
+}
+  
