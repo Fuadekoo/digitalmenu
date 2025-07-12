@@ -14,7 +14,7 @@ import {
 
 const menu = [
   { label: "Dashboard", url: "dashboard", icon: <Home size={18} /> },
-  { label: "Catagory", url: "catagory", icon: <User size={18} /> },
+  { label: "Category", url: "category", icon: <User size={18} /> },
   {
     label: "Products",
     url: "products",
