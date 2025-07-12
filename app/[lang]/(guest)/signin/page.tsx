@@ -43,7 +43,8 @@ function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center text-green-600 mb-6">
-          Welcome to Digital Menu
+          {/* Welcome to Digital Menu */}
+          login
         </h1>
         <form onSubmit={handleSubmit(action)} className="space-y-5">
           <div>
