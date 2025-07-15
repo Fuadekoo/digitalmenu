@@ -127,36 +127,42 @@ function CustomTable({
                       ) : columnKey === "photo" &&
                         typeof item.photo === "string" &&
                         item.photo ? (
-                        <Image
-                          src={`/api/filedata/${item.photo}`}
-                          alt={`Proof for ${item.id || item.key || "entry"}`}
-                          width={300}
-                          height={300}
+                        <div
                           style={{
                             width: "100px",
-                            height: "auto",
-                            objectFit: "cover",
-                            cursor: "pointer",
+                            height: "100px",
+                            position: "relative",
                           }}
-                          onClick={() =>
-                            handleImageClick(`/api/filedata/${item.photo}`)
-                          }
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = "none";
-                            const parent = target.parentElement;
-                            if (
-                              parent &&
-                              !parent.querySelector(".no-preview-text")
-                            ) {
-                              const errorText = document.createElement("span");
-                              errorText.textContent = "No preview";
-                              errorText.className =
-                                "text-xs text-gray-400 no-preview-text";
-                              parent.appendChild(errorText);
+                        >
+                          <Image
+                            src={`/api/filedata/${item.photo}`}
+                            alt={`Proof for ${item.id || item.key || "entry"}`}
+                            fill
+                            style={{
+                              objectFit: "cover",
+                              cursor: "pointer",
+                            }}
+                            onClick={() =>
+                              handleImageClick(`/api/filedata/${item.photo}`)
                             }
-                          }}
-                        />
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = "none";
+                              const parent = target.parentElement;
+                              if (
+                                parent &&
+                                !parent.querySelector(".no-preview-text")
+                              ) {
+                                const errorText =
+                                  document.createElement("span");
+                                errorText.textContent = "No preview";
+                                errorText.className =
+                                  "text-xs text-gray-400 no-preview-text";
+                                parent.appendChild(errorText);
+                              }
+                            }}
+                          />
+                        </div>
                       ) : (
                         getKeyValue(item, columnKey)
                       )}

@@ -37,8 +37,8 @@ export const productSchema = z.object({
   photo: z.string().min(1, "Photo is required"),
   price: z.coerce.number().min(0, "Product price must be positive"),
   quantity: z.coerce.number().min(0, "Quantity must be at least 0"),
-  isAvailable: z.boolean().optional().default(true),
-  isFeatured: z.boolean().optional().default(false),
+  isAvailable: z.boolean(),
+  isFeatured: z.boolean(),
   categoryId: z.string().min(1, "Category ID is required"),
 });
 export type ProductType = z.infer<typeof productSchema>;
@@ -57,7 +57,9 @@ export const orderSchema = z.object({
   phone: z.string().optional(),
   clientName: z.string().optional(),
   status: z.string().optional().default("pending"),
-  orderItems: z.array(orderItemSchema).min(1, "At least one order item is required"),
+  orderItems: z
+    .array(orderItemSchema)
+    .min(1, "At least one order item is required"),
   createdBy: z.string().min(1, "CreatedBy is required"),
 });
 export type OrderType = z.infer<typeof orderSchema>;

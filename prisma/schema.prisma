@@ -65,6 +65,7 @@ model table {
   id         String   @id @default(cuid())
   name       String
   tNumber    Int      @unique
+  roomNumber String?
   waiterId   String?
   waiter     waiters? @relation(fields: [waiterId], references: [id])
   isOccupied Boolean  @default(false)
@@ -90,12 +91,12 @@ model order {
 }
 
 model orderItem {
-  id        String @id @default(cuid())
+  id        String   @id @default(cuid())
   orderId   String
   productId String
-  quantity  Int    @default(1)
+  quantity  Int      @default(1)
   price     Float
-
+  status    String   @default("pending") // pending, completed, cancelled
   order     order    @relation(fields: [orderId], references: [id])
   product   product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())

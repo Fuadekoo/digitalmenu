@@ -209,7 +209,7 @@ function CategoryList() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-end">
+      <div className="overflow-y-auto mb-4 flex items-center justify-end">
         <Button color="primary" onPress={handleAddCategory}>
           Add Category
         </Button>

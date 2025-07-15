@@ -103,7 +103,9 @@ export async function getCustomerOrder(orderId: string) {
   return await prisma.order.findUnique({
     where: { id: orderId },
     include: {
-      orderItems: true,
+      orderItems: {
+        select: { orderId: true, productId: true, quantity: true, price: true },
+      },
       table: true,
     },
   });
@@ -113,7 +115,9 @@ export async function getCustomerOrders(tableId?: string) {
   return await prisma.order.findMany({
     where: tableId ? { tableId } : {},
     include: {
-      orderItems: true,
+      orderItems: {
+        select: { orderId: true, productId: true, quantity: true, price: true },
+      },
       table: true,
     },
     orderBy: { createdAt: "desc" },
