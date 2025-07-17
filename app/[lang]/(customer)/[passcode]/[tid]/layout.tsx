@@ -26,6 +26,11 @@ export default async function Layout({
       icon: <Package size={18} />,
     },
     {
+      label: "My Orders",
+      url: `/${params.passcode}/${params.tid}/orders`,
+      icon: <Package size={18} />,
+    },
+    {
       label: "Notification",
       url: `/${params.passcode}/${params.tid}/notification`,
       icon: <CreditCard size={18} />,

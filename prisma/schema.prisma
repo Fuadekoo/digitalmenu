@@ -41,6 +41,7 @@ model product {
   description String?
   photo       String
   price       Float
+  discount    Float?   @default(0)
   quantity    Int
   isAvailable Boolean  @default(true)
   isFeatured  Boolean  @default(false)
