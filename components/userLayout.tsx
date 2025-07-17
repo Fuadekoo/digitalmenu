@@ -95,8 +95,8 @@ function Sidebar({
         </Button>
         <div className="flex items-center gap-3 px-5 pt-2 pb-2">
           <Image
-            src="/fu.jpg" // Place your logo in public/company-logo.png
-            alt="Darelkubra"
+            src="/logo.png" // Place your logo in public/company-logo.png
+            alt="Qr Menu"
             width={80}
             height={80}
             className="rounded-full"

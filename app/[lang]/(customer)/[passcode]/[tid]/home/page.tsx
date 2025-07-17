@@ -121,7 +121,7 @@ function Page() {
           <h1>Category</h1>
           <h1>View All</h1>
         </div> */}
-        <div className="flex gap-4 overflow-x-auto pb-2">
+        <div className="flex gap-4 overflow-x-auto pb-2 ">
           {catagoryData.map((cat) => (
             <div
               key={cat.id}
@@ -142,11 +142,17 @@ function Page() {
 
       {/* thsi is rthe second x-scrol */}
       <div>
+        <div className="flex items-center gap-2 mb-2">
+          <h1 className="font-bold text-lg text-blue-700">Special Offers</h1>
+          <button className="px-3 py-1 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition">
+            Go
+          </button>
+        </div>
         <div className="bg-white/100 flex gap-4 overflow-x-auto pb-2">
           {catagoryData.map((cat) => (
             <div
               key={cat.id}
-              className="border-3 border-black rounded-xl bg-blue-500 m-4 flex-shrink-0 flex flex-col items-center w-60 h-60 gap-2"
+              className="border-3 border-black rounded-xl bg-white/100 m-4 flex-shrink-0 flex flex-col items-center w-60 h-60 gap-2"
             >
               <div className="overflow-hidden bg-primary-600 flex items-center justify-center w-full h-full">
                 <img
@@ -159,6 +165,12 @@ function Page() {
             </div>
           ))}
         </div>
+      </div>
+      <div className="flex items-center justify-between px-2 py-4">
+        <h1 className="text-2xl font-bold text-gray-800">
+          All Restaurants Food
+        </h1>
+        {/* <span className="text-sm text-gray-500">Browse delicious meals from all categories</span> */}
       </div>
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 m-2">
         {food.map((item) => (
