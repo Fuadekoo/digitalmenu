@@ -9,7 +9,7 @@ import {
   DropdownTrigger,
   Link,
 } from "@heroui/react";
-import { BellIcon } from "lucide-react";
+import { LogOutIcon, UserIcon } from "lucide-react";
 // import Theme from "./theme";
 import { AlignLeft, ChevronLeft, ChevronRight, DoorOpen } from "lucide-react";
 import { useState } from "react";
@@ -20,6 +20,7 @@ import Image from "next/image";
 // import { div } from "framer-motion/client";
 import { addToast } from "@heroui/toast";
 import { logout } from "@/actions/common/authentication"; // Add this import
+// import DateTimeDisplay from "./DateTimeDisplay";
 
 export default function UserLayout({
   children,
@@ -36,13 +37,11 @@ export default function UserLayout({
 }) {
   const [sidebar, setSidebar] = useState(false);
   return (
-    <div className="grid lg:grid-cols-[auto_1fr] overflow-hidden">
+    <div className="grid lg:grid-cols-[auto_1fr] overflow-hidden h-screen">
       <Sidebar {...{ sidebar, setSidebar, menu, isManager }} />
-      <div className="flex flex-col gap-2 overflow-hidden">
+      <div className="grid grid-rows-[auto_1fr] gap-2 overflow-hidden">
         <Header sidebar={sidebar} setSidebar={setSidebar} />
-        <div className="min-h-[calc(100dvh-3.6rem)] p-2 rounded-xl overflow-hidden grid">
-          {children}
-        </div>
+        <div className="p-2 rounded-xl overflow-y-auto grid">{children}</div>
       </div>
     </div>
   );
@@ -69,13 +68,13 @@ function Sidebar({
   return (
     <aside
       className={cn(
-        "z-50 relative accent3 grid grid-cols-[auto_1fr] overflow-hidden-",
+        "z-50 relative accent3 grid grid-cols-[auto_1fr] overflow-hidden",
         sidebar ? "max-lg:absolute max-lg:inset-0 " : "max-lg:hidden"
       )}
     >
       <div
         className={cn(
-          "relative  bg-default-100 grid grid-rows-[auto_1fr_auto] overflow-hidden-",
+          "relative  bg-blue-950 grid grid-rows-[auto_1fr_auto] overflow-hidden",
           sidebar ? "max-xl:lg:w-60 w-80" : "max-xl:lg:w-14 w-20"
         )}
       >
@@ -94,17 +93,19 @@ function Sidebar({
             <ChevronRight className="size-4" />
           )}
         </Button>
-        <div className="flex items-center gap-3 px-5 pt-4 pb-2">
+        <div className="flex items-center gap-3 px-5 pt-2 pb-2">
           <Image
-            src="/cart.png" // Place your logo in public/company-logo.png
-            alt="Company Logo"
+            src="/fu.jpg" // Place your logo in public/company-logo.png
+            alt="Darelkubra"
             width={80}
             height={80}
             className="rounded-full"
           />
           {sidebar && (
             <span className="font-bold text-lg text-primary whitespace-nowrap">
-              Wallmart
+              DIGITAL
+              <br />
+              MENU
             </span>
           )}
         </div>
@@ -118,7 +119,7 @@ function Sidebar({
               variant={(selected ?? "") == url ? "solid" : "light"}
               className="w-full px-3 inline-flex gap-5 justify-start"
               as={Link}
-              href={`/${lang}/${role}/${url}`}
+              href={`/${lang}/${url}`}
             >
               {icon}
               {sidebar && <span className="px-5 capitalize ">{label}</span>}
@@ -147,7 +148,7 @@ function Header({
 }) {
   //   const [data, ,] = useAction(getUser, [true, () => {}]);
   return (
-    <header className="z-30 h-12 p-2 flex gap-4 items-center max-lg:shadow-sm bg-gray-500/10">
+    <header className="z-30 h-12 p-2 flex gap-4 items-center max-lg:shadow-sm bg-white/100">
       <Button
         isIconOnly
         variant="flat"
@@ -158,8 +159,11 @@ function Header({
         <AlignLeft className="size-7" />
       </Button>
 
-      <BellIcon />
-      {/* <User sidebar={true} /> */}
+      <div className="flex justify-between items-center w-full">
+        {/* <DateTimeDisplay /> */}
+        <h1>fuad</h1>
+        <User sidebar={true} />
+      </div>
     </header>
   );
 }
@@ -172,38 +176,12 @@ function User({ sidebar }: { sidebar: boolean }) {
   return (
     <Dropdown className="overflow-hidden">
       <DropdownTrigger>
-        <Button
-          isIconOnly
-          color="primary"
-          variant="flat"
-          className={cn(
-            "w-auto h-fit inline-flex gap-5 justify-start",
-            sidebar ? "md:px-4 md:py-1" : ""
-          )}
-        >
-          <Image
-            alt=""
-            src="/profile.jpg"
-            width={100}
-            height={100}
-            className="size-10"
-          />
-          {/* {sidebar && (
-            <p className="px-4 grid justify-start">
-              <span className="text-medium overflow-hidden whitespace-nowrap ">
-                {data?.user?.username ?? "User"}
-              </span>
-              <span className="text-xs text-start">
-                {data?.user?.myCode ?? ""}
-              </span>
-            </p>
-          )} */}
-        </Button>
+        <UserIcon className="size-5" />
       </DropdownTrigger>
       <DropdownMenu color="primary" variant="flat">
         <DropdownItem
           key={"signout"}
-          startContent={<DoorOpen className="size-4" />}
+          startContent={<LogOutIcon className="size-4" />}
           color="danger"
           onClick={async () => {
             await logout();

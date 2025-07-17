@@ -26,8 +26,22 @@ export async function getOrder(
 
     const data = await prisma.order.findMany({
       where,
-      include: {
-        table: true,
+      select: {
+        id: true,
+        status: true,
+        orderCode: true,
+        location: true,
+        createdBy: true,
+        totalPrice: true,
+        createdAt: true,
+        orderItems: true,
+        table: {
+          select: {
+            roomNumber: true,
+            tNumber: true,
+            waiter: { select: { name: true } },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
@@ -55,8 +69,9 @@ export async function getOrderItems(orderId: string) {
   try {
     const orderItems = await prisma.orderItem.findMany({
       where: { orderId },
+      // select: {},
       include: {
-        product: true,
+        product: { select: { name: true, photo: true } },
       },
     });
     return orderItems;
@@ -90,4 +105,28 @@ export async function rejectOrder(id: string) {
     console.error("Error rejecting order:", error);
     return { message: "Failed to reject order" };
   }
+}
+export async function approveOrderItems(itemsId: string) {
+  try {
+    await prisma.orderItem.update({
+      where: { id: itemsId },
+      data: { status: "APPROVED" },
+    });
+    return { message: "Order item approved successfully" };
+  } catch (error) {
+    console.error("Error approving order item:", error);
+    return { message: "Failed to approve order item" };
+  }
+}
+
+export async function rejectOrderItems(itemsId: string) {
+  await prisma.orderItem.update({
+    where: {
+      id: itemsId,
+    },
+    data: {
+      status: "REJECTED",
+    },
+  });
+  return { message: "" };
 }

@@ -17,6 +17,7 @@ interface OrderItem {
   key?: string | number;
   orderId: string;
   productId: string;
+  photo: string;
   quantity: number;
   price: number;
 }
@@ -24,7 +25,7 @@ interface OrderItem {
 interface Order {
   id: string | number;
   key?: string | number;
-  userId: string;
+  orderCode: string;
   totalAmount: number;
   status: string;
   createdAt: string;
@@ -100,6 +101,7 @@ function Page() {
               orderId: item.orderId,
               productId: item.productId,
               quantity: item.quantity,
+              photo: item.product?.photo || "",
               price: item.price,
             }))
           );
@@ -148,14 +150,19 @@ function Page() {
       },
     },
     {
-      key: "userId",
-      label: "User ID",
-      renderCell: (item) => item.userId,
+      key: "orderCode",
+      label: "Order Code",
+      renderCell: (item) => item.orderCode,
     },
     {
       key: "totalAmount",
       label: "Total Amount",
-      renderCell: (item) => `$${item.totalAmount}`,
+      renderCell: (item) => `$${item.totalPrice}`,
+    },
+    {
+      key: "location",
+      label: "Location",
+      renderCell: (item) => item.location,
     },
     {
       key: "status",
@@ -179,8 +186,9 @@ function Page() {
             onPress={() =>
               handleViewOrderItems({
                 id: item.id,
-                userId: item.userId,
-                totalAmount: Number(item.totalAmount),
+                orderCode: item.orderCode,
+                // userId: item.userId,
+                totalAmount: Number(item.totalPrice),
                 status: item.status,
                 createdAt: item.createdAt,
               })
@@ -242,6 +250,12 @@ function Page() {
                   <li key={item.id} className="py-2 border-b">
                     Product ID: {item.productId}, Quantity: {item.quantity},
                     Price: ${item.price}
+                    {/* Photo: {item.photo} */}
+                    <img
+                      src={`/api/filedata/${item.photo}`}
+                      alt={item.productId}
+                      className="w-30 h-30 object-cover rounded mt-2"
+                    />
                   </li>
                 ))}
               </ul>
