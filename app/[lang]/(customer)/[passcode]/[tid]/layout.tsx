@@ -27,7 +27,7 @@ export default async function Layout({
     },
     {
       label: "My Orders",
-      url: `/${params.passcode}/${params.tid}/orders`,
+      url: `/${params.passcode}/${params.tid}/myorders`,
       icon: <Package size={18} />,
     },
     {
