@@ -4,6 +4,7 @@ import UserLayout from "@/components/userLayout";
 import { redirect } from "next/navigation";
 import { Home, Package, CreditCard, User } from "lucide-react";
 import LocationPopup from "@/components/LocationPopup";
+import Footer from "@/components/footer";
 
 export default async function Layout({
   children,
@@ -49,6 +50,7 @@ export default async function Layout({
       <UserLayout menu={menu} isManager={isManager}>
         {/* <LocationPopup /> */}
         {children}
+        {/* <Footer /> */}
       </UserLayout>
     </div>
   );

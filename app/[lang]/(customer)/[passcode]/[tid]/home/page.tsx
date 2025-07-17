@@ -1,37 +1,49 @@
 "use client";
+import Footer from "@/components/footer";
 import React, { useState } from "react";
 import { Input } from "@heroui/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, PlusCircle } from "lucide-react";
 
 function Page() {
   const catagoryData = [
-    { id: 1, cname: "Category 1", photo: "/images/category1.jpg" },
-    { id: 2, cname: "Category 2", photo: "/images/category2.jpg" },
-    { id: 3, cname: "Category 3", photo: "/images/category3.jpg" },
-    { id: 4, cname: "Category 4", photo: "/images/category4.jpg" },
-    { id: 5, cname: "Category 5", photo: "/images/category5.jpg" },
-    { id: 6, cname: "Category 6", photo: "/images/category6.jpg" },
-    { id: 7, cname: "Category 7", photo: "/images/category7.jpg" },
-    { id: 8, cname: "Category 8", photo: "/images/category8.jpg" },
-    { id: 9, cname: "Category 9", photo: "/images/category9.jpg" },
-    { id: 10, cname: "Category 10", photo: "/images/category10.jpg" },
+    { id: 1, cname: "Category 1", photo: "/fu.jpg" },
+    { id: 2, cname: "Category 2", photo: "/fu.jpg" },
+    { id: 2, cname: "Category 2", photo: "/fu.jpg" },
+    { id: 2, cname: "Category 2", photo: "/fu.jpg" },
+    { id: 3, cname: "Category 3", photo: "/fu.jpg" },
+    { id: 4, cname: "Category 4", photo: "/fu.jpg" },
+    { id: 5, cname: "Category 5", photo: "/fu.jpg" },
+    { id: 6, cname: "Category 6", photo: "/fu.jpg" },
+    { id: 7, cname: "Category 7", photo: "/fu.jpg" },
+    { id: 8, cname: "Category 8", photo: "/fu.jpg" },
+    { id: 9, cname: "Category 9", photo: "/fu.jpg" },
+    { id: 10, cname: "Category 10", photo: "/fu.jpg" },
   ];
 
   const food = [
-    { id: 1, name: "Pizza", price: 12.99, photo: "/images/pizza.jpg" },
-    { id: 2, name: "Burger", price: 9.99, photo: "/images/burger.jpg" },
-    { id: 3, name: "Pasta", price: 11.49, photo: "/images/pasta.jpg" },
-    { id: 4, name: "Salad", price: 7.99, photo: "/images/salad.jpg" },
-    { id: 5, name: "Sushi", price: 15.99, photo: "/images/sushi.jpg" },
+    { id: 1, name: "Pizza", price: 12.99, photo: "/fu.jpg" },
+    { id: 2, name: "Burger", price: 9.99, photo: "/fu.jpg" },
+    { id: 3, name: "Pasta", price: 11.49, photo: "/fu.jpg" },
+    { id: 4, name: "Salad", price: 7.99, photo: "/fu.jpg" },
+    { id: 5, name: "Sushi", price: 15.99, photo: "/fu.jpg" },
   ];
 
   const carouselItems = [
-    { id: 1, content: "f", bgColor: "bg-red-100" },
-    { id: 2, content: "u", bgColor: "bg-green-100" },
-    { id: 3, content: "n", bgColor: "bg-blue-100" },
+    { id: 1, content: "f", photo: "/fu.jpg" },
+    { id: 2, content: "u", photo: "/fu.jpg" },
+    { id: 3, content: "n", photo: "/fu.jpg" },
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveIndex((prev) =>
+        prev === carouselItems.length - 1 ? 0 : prev + 1
+      );
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [carouselItems.length]);
   const nextSlide = () => {
     setActiveIndex((prev) =>
       prev === carouselItems.length - 1 ? 0 : prev + 1
@@ -60,9 +72,16 @@ function Page() {
           {carouselItems.map((item) => (
             <div
               key={item.id}
-              className={`flex-shrink-0 w-full h-48 flex items-center justify-center text-5xl font-bold ${item.bgColor}`}
+              className="flex-shrink-0 w-full h-60 flex items-center justify-center relative"
             >
-              {item.content}
+              <img
+                src={item.photo}
+                alt={`Slide ${item.id}`}
+                className="object-cover w-full h-full rounded-2xl"
+              />
+              <div className="absolute bottom-4 left-4 bg-black/60 text-white px-3 py-1 rounded-lg text-lg font-semibold">
+                {item.content}
+              </div>
             </div>
           ))}
         </div>
@@ -102,13 +121,34 @@ function Page() {
           <h1>Category</h1>
           <h1>View All</h1>
         </div> */}
-        <div className="bg-red-400 flex gap-4 overflow-x-auto pb-2">
+        <div className="flex gap-4 overflow-x-auto pb-2">
           {catagoryData.map((cat) => (
             <div
               key={cat.id}
-              className="bg-green-500 flex-shrink-0 flex flex-col items-center w-20 gap-1"
+              className="m-2 flex-shrink-0 flex flex-col items-center w-20 gap-1"
             >
-              <div className="bg-yellow-400 rounded-full overflow-hidden w-24 h-24 bg-primary-600 flex items-center justify-center">
+              <div className=" rounded-full overflow-hidden w-24 h-24 bg-primary-600 flex items-center justify-center">
+                <img
+                  src={cat.photo}
+                  alt={cat.cname}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+              <span className="mt-2 text-center">{cat.cname}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* thsi is rthe second x-scrol */}
+      <div>
+        <div className="bg-white/100 flex gap-4 overflow-x-auto pb-2">
+          {catagoryData.map((cat) => (
+            <div
+              key={cat.id}
+              className="border-3 border-black rounded-xl bg-blue-500 m-4 flex-shrink-0 flex flex-col items-center w-60 h-60 gap-2"
+            >
+              <div className="overflow-hidden bg-primary-600 flex items-center justify-center w-full h-full">
                 <img
                   src={cat.photo}
                   alt={cat.cname}
@@ -124,9 +164,9 @@ function Page() {
         {food.map((item) => (
           <div
             key={item.id}
-            className="border-2 border-primary-500 rounded-xl h-60 p-4 flex flex-col justify-between"
+            className="border-2 border-blue-500 rounded-xl h-60 p-4 flex flex-col justify-between"
           >
-            <div>
+            <div className="w-full h-32 overflow-hidden flex items-center justify-center">
               <img
                 src={item.photo}
                 alt={item.name}
@@ -141,12 +181,13 @@ function Page() {
                 </p>
               </div>
               <button className="ml-2 px-1 py-1 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition">
-                Add to Cart
+                <PlusCircle />
               </button>
             </div>
           </div>
         ))}
       </div>
+      <Footer />
     </div>
   );
 }

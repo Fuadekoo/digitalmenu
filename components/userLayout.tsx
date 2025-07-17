@@ -9,7 +9,7 @@ import {
   DropdownTrigger,
   Link,
 } from "@heroui/react";
-import { LogOutIcon, UserIcon } from "lucide-react";
+import { BellRing, LogOutIcon, UserIcon } from "lucide-react";
 // import Theme from "./theme";
 import { AlignLeft, ChevronLeft, ChevronRight, DoorOpen } from "lucide-react";
 import { useState } from "react";
@@ -162,7 +162,8 @@ function Header({
       <div className="flex justify-between items-center w-full">
         {/* <DateTimeDisplay /> */}
         <h1>fuad</h1>
-        <User sidebar={true} />
+        <BellRing />
+        {/* <User sidebar={true} /> */}
       </div>
     </header>
   );
