@@ -25,6 +25,7 @@ interface ProductItem {
   description: string;
   photo: string;
   price: number;
+  discount?: number; // Optional discount field
   quantity: number;
   isAvailable: boolean;
   isFeatured: boolean;
@@ -152,6 +153,7 @@ function Page() {
     setValue("description", item.description);
     setValue("photo", item.photo); // Set existing photo URL or base64
     setValue("price", item.price);
+    setValue("discount", item.discount || 0); // Set discount, default to 0 if not provided
     setValue("quantity", item.quantity);
     setValue("isAvailable", item.isAvailable);
     setValue("isFeatured", item.isFeatured);
@@ -428,6 +430,32 @@ function Page() {
                       />
                     </div>
                   )}
+
+                <Input
+                  placeholder="Price"
+                  type="number"
+                  step="0.01"
+                  {...register("price", { valueAsNumber: true })}
+                  disabled={isLoadingCreate || isLoadingUpdate}
+                />
+                {errors.price && (
+                  <span className="text-red-500 text-xs">
+                    {errors.price.message}
+                  </span>
+                )}
+
+                <Input
+                  placeholder="Discount"
+                  type="number"
+                  step="0.01"
+                  {...register("discount", { valueAsNumber: true })}
+                  disabled={isLoadingCreate || isLoadingUpdate}
+                />
+                {errors.discount && (
+                  <span className="text-red-500 text-xs">
+                    {errors.discount.message}
+                  </span>
+                )}
 
                 <Input
                   placeholder="Price"

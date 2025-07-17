@@ -8,6 +8,7 @@ export type LoginType = z.infer<typeof loginSchema>;
 
 export const categorySchema = z.object({
   cname: z.string().min(1, "Category name is required"),
+  photo: z.string().optional(),
 });
 export type CategoryType = z.infer<typeof categorySchema>;
 
@@ -36,6 +37,7 @@ export const productSchema = z.object({
   description: z.string().optional(),
   photo: z.string().min(1, "Photo is required"),
   price: z.coerce.number().min(0, "Product price must be positive"),
+  discount: z.coerce.number().optional().default(0),
   quantity: z.coerce.number().min(0, "Quantity must be at least 0"),
   isAvailable: z.boolean(),
   isFeatured: z.boolean(),

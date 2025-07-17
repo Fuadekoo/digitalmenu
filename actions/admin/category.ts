@@ -2,6 +2,9 @@
 import prisma from "@/lib/db";
 import { z } from "zod";
 import { categorySchema } from "@/lib/zodSchema";
+import { randomUUID } from "crypto";
+import path from "path";
+import fs from "fs/promises";
 
 export async function getCategory(
   search?: string,
@@ -16,9 +19,7 @@ export async function getCategory(
     // Count total records
     const totalRows = await prisma.productCategory.count({
       where: {
-        OR: search
-          ? [{ cname: { contains: search } }]
-          : undefined,
+        OR: search ? [{ cname: { contains: search } }] : undefined,
       },
     });
 
@@ -27,9 +28,7 @@ export async function getCategory(
     const data = await prisma.productCategory.findMany({
       orderBy: { createdAt: "desc" },
       where: {
-        OR: search
-          ? [{ cname: { contains: search } }]
-          : undefined,
+        OR: search ? [{ cname: { contains: search } }] : undefined,
       },
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -66,8 +65,41 @@ export async function deleteCategory(id: string) {
 
 export async function createCategory(data: z.infer<typeof categorySchema>) {
   try {
+    const parsedData = categorySchema.safeParse(data);
+    if (!parsedData.success) {
+      console.log(parsedData.error);
+      throw new Error("Invalid category data");
+    }
+
+    let photoUrl: string | undefined = undefined;
+    if (data.photo) {
+      // Assume data.photo is a base64 string or a Buffer
+      // Generate unique filename
+      const ext = ".jpg"; // or parse from data.photo if you have mime info
+      const uniqueName = `${randomUUID()}${ext}`;
+      const filePath = path.join(process.cwd(), "filedata", uniqueName);
+
+      // Save file
+      let buffer: Buffer;
+      if (typeof data.photo === "string" && data.photo.startsWith("data:")) {
+        // base64 data URL
+        const base64 = data.photo.split(",")[1];
+        buffer = Buffer.from(base64, "base64");
+      } else if (typeof data.photo === "string") {
+        buffer = Buffer.from(data.photo, "base64");
+      } else {
+        buffer = data.photo;
+      }
+      await fs.mkdir(path.dirname(filePath), { recursive: true });
+      await fs.writeFile(filePath, buffer);
+      photoUrl = uniqueName;
+    }
+
     const category = await prisma.productCategory.create({
-      data,
+      data: {
+        cname: data.cname,
+        photo: photoUrl,
+      },
     });
     return { message: "Category created successfully", category };
   } catch (error) {

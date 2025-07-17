@@ -21,6 +21,7 @@ CREATE TABLE `user` (
 CREATE TABLE `productCategory` (
     `id` VARCHAR(191) NOT NULL,
     `cname` VARCHAR(191) NOT NULL,
+    `photo` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -35,6 +36,7 @@ CREATE TABLE `product` (
     `description` VARCHAR(191) NULL,
     `photo` VARCHAR(191) NOT NULL,
     `price` DOUBLE NOT NULL,
+    `discount` DOUBLE NULL DEFAULT 0,
     `quantity` INTEGER NOT NULL,
     `isAvailable` BOOLEAN NOT NULL DEFAULT true,
     `isFeatured` BOOLEAN NOT NULL DEFAULT false,
@@ -62,6 +64,7 @@ CREATE TABLE `table` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `tNumber` INTEGER NOT NULL,
+    `roomNumber` VARCHAR(191) NULL,
     `waiterId` VARCHAR(191) NULL,
     `isOccupied` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -95,6 +98,7 @@ CREATE TABLE `orderItem` (
     `productId` VARCHAR(191) NOT NULL,
     `quantity` INTEGER NOT NULL DEFAULT 1,
     `price` DOUBLE NOT NULL,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'pending',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 

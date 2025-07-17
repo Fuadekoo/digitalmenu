@@ -44,6 +44,7 @@ export async function createProduct(data: z.infer<typeof productSchema>) {
       data: {
         name: data.name,
         price: data.price,
+        discount: data.discount,
         quantity: data.quantity,
         isAvailable: data.isAvailable,
         isFeatured: data.isFeatured,
