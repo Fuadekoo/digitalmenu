@@ -1,74 +1,39 @@
 "use client";
 import React, { useState } from "react";
-import { X, FileText } from "lucide-react";
+import { X, FileText, ShoppingBag, Loader2 } from "lucide-react";
+import useAction from "@/hooks/useActions";
+import { gateOrderData, gateOrderIds } from "@/actions/customer/myorder"; // Ensure this action exists and accepts an array of IDs
+import { useCart } from "@/hooks/useCart"; // To get order IDs from localStorage
 
-// --- Interfaces for our data structures ---
+// --- Interfaces for our data structures (matching Prisma schema) ---
 interface OrderItem {
-  id: number;
-  productName: string;
+  id: string;
   quantity: number;
   price: number;
+  product: {
+    name: string;
+  };
 }
 
 interface Order {
-  id: number;
-  orderCode: string;
-  tableName: string;
+  id: string;
+  table: {
+    name: string;
+  };
   totalPrice: number;
-  status: "Pending" | "Completed" | "Cancelled";
-  date: string;
-  items: OrderItem[];
+  status: "pending" | "completed" | "cancelled";
+  createdAt: string;
+  orderItems: OrderItem[];
 }
-
-// --- Mock Data (replace with API call later) ---
-const sampleOrders: Order[] = [
-  {
-    id: 1,
-    orderCode: "ORD-2025-A4B3",
-    tableName: "Table 5",
-    totalPrice: 420.5,
-    status: "Completed",
-    date: "2025-07-16",
-    items: [
-      {
-        id: 101,
-        productName: "Char-Grilled Filet Mignon",
-        quantity: 1,
-        price: 380.0,
-      },
-      { id: 102, productName: "Sparkling Water", quantity: 1, price: 40.5 },
-    ],
-  },
-  {
-    id: 2,
-    orderCode: "ORD-2025-C8D9",
-    tableName: "Table 2",
-    totalPrice: 180.0,
-    status: "Pending",
-    date: "2025-07-17",
-    items: [
-      { id: 201, productName: "Classic Burger", quantity: 2, price: 90.0 },
-    ],
-  },
-  {
-    id: 3,
-    orderCode: "ORD-2025-E1F2",
-    tableName: "Table 5",
-    totalPrice: 95.0,
-    status: "Cancelled",
-    date: "2025-07-15",
-    items: [{ id: 301, productName: "Caesar Salad", quantity: 1, price: 95.0 }],
-  },
-];
 
 // --- Helper to get status color ---
 const getStatusClass = (status: Order["status"]) => {
   switch (status) {
-    case "Completed":
+    case "completed":
       return "bg-green-100 text-green-800";
-    case "Pending":
+    case "pending":
       return "bg-yellow-100 text-yellow-800";
-    case "Cancelled":
+    case "cancelled":
       return "bg-red-100 text-red-800";
     default:
       return "bg-gray-100 text-gray-800";
@@ -76,58 +41,103 @@ const getStatusClass = (status: Order["status"]) => {
 };
 
 function Page() {
-  const [orders] = useState<Order[]>(sampleOrders);
+  const { orderIds } = useCart(); // Get the list of order IDs from the cart store
+  // Pass the orderIds array to the useAction hook to fetch the data
+  const [orderdata, refresh, isLoadingOrder] = useAction(
+    gateOrderIds,
+    [
+      true,
+      (response) => {
+        if (response) {
+          // Handle successful order data retrieval
+          console.log("Order Data:", response);
+        } else {
+          // Handle error in retrieving order data
+          console.error("Failed to retrieve order data");
+        }
+      },
+    ],
+    orderIds
+  );
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen font-sans">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">My Orders</h1>
 
+      {/* Loading State */}
+      {isLoadingOrder && (
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
+          <p className="ml-4 text-gray-600">Loading your orders...</p>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isLoadingOrder && (!orderdata || orderdata.length === 0) && (
+        <div className="text-center py-20 bg-white rounded-lg shadow-md">
+          <ShoppingBag className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-lg font-medium text-gray-900">
+            No orders found
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            You haven't placed any orders yet.
+          </p>
+        </div>
+      )}
+
       {/* Orders List */}
-      <div className="space-y-4">
-        {orders.map((order) => (
-          <div
-            key={order.id}
-            className="bg-white p-4 rounded-lg shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-          >
-            <div className="flex-grow grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-              <div>
-                <p className="font-semibold text-gray-500">Order Code</p>
-                <p className="text-gray-900 font-bold">{order.orderCode}</p>
+      {!isLoadingOrder && orderdata && orderdata.length > 0 && (
+        <div className="space-y-4">
+          {orderdata.map((order) => (
+            <div
+              key={order.id}
+              className="bg-white p-4 rounded-lg shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+            >
+              <div className="flex-grow grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <p className="font-semibold text-gray-500">Order Code</p>
+                  <p className="text-gray-900 font-bold">
+                    #
+                    {(order.orderCode ?? order.id)
+                      .substring(0, 8)
+                      .toUpperCase()}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">Table</p>
+                  <p className="text-gray-900">{order.tableId ?? "N/A"}</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">Total</p>
+                  <p className="text-gray-900 font-bold">
+                    ${order.totalPrice.toFixed(2)}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">Status</p>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusClass(
+                      order.status as "pending" | "completed" | "cancelled"
+                    )}`}
+                  >
+                    {order.status}
+                  </span>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold text-gray-500">Table</p>
-                <p className="text-gray-900">{order.tableName}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-gray-500">Total</p>
-                <p className="text-gray-900 font-bold">
-                  ${order.totalPrice.toFixed(2)}
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-gray-500">Status</p>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(
-                    order.status
-                  )}`}
+              <div className="flex-shrink-0 w-full sm:w-auto">
+                {/* <button
+                  onClick={() => setSelectedOrder(order)}
+                  className="w-full sm:w-auto bg-primary-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
                 >
-                  {order.status}
-                </span>
+                  <FileText size={16} />
+                  Details
+                </button> */}
               </div>
             </div>
-            <div className="flex-shrink-0 w-full sm:w-auto">
-              <button
-                onClick={() => setSelectedOrder(order)}
-                className="w-full sm:w-auto bg-primary-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
-              >
-                <FileText size={16} />
-                Details
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Order Details Modal */}
       {selectedOrder && (
@@ -136,7 +146,7 @@ function Page() {
           onClick={() => setSelectedOrder(null)}
         >
           <div
-            className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 animate-in fade-in-0 zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
@@ -150,31 +160,35 @@ function Page() {
                 <X size={24} className="text-gray-600" />
               </button>
             </div>
-            <div className="mb-6 border-b pb-4">
+            <div className="mb-6 border-b pb-4 text-sm text-gray-600">
               <p>
-                <strong>Order Code:</strong> {selectedOrder.orderCode}
+                <strong>Order Code:</strong> #
+                {selectedOrder.id.substring(0, 8).toUpperCase()}
               </p>
               <p>
-                <strong>Date:</strong> {selectedOrder.date}
+                <strong>Date:</strong>{" "}
+                {new Date(selectedOrder.createdAt).toLocaleString()}
               </p>
             </div>
-            <h3 className="text-lg font-semibold mb-3">Items</h3>
-            <div className="space-y-3">
-              {selectedOrder.items.map((item) => (
+            <h3 className="text-lg font-semibold mb-3 text-gray-800">Items</h3>
+            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+              {selectedOrder.orderItems.map((item) => (
                 <div
                   key={item.id}
                   className="flex justify-between items-center text-sm"
                 >
-                  <p className="text-gray-700">{item.productName}</p>
-                  <p className="text-gray-500">Qty: {item.quantity}</p>
-                  <p className="font-semibold text-gray-800">
+                  <p className="text-gray-700 flex-1">{item.product.name}</p>
+                  <p className="text-gray-500 w-20 text-center">
+                    {item.quantity} x ${item.price.toFixed(2)}
+                  </p>
+                  <p className="font-semibold text-gray-800 w-20 text-right">
                     ${(item.price * item.quantity).toFixed(2)}
                   </p>
                 </div>
               ))}
             </div>
             <div className="border-t mt-6 pt-4 flex justify-end">
-              <p className="text-xl font-bold">
+              <p className="text-xl font-bold text-gray-900">
                 Total: ${selectedOrder.totalPrice.toFixed(2)}
               </p>
             </div>

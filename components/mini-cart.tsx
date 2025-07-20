@@ -18,7 +18,7 @@ import { Redirect } from "next";
 function MiniCart() {
   // This component assumes you have a custom hook `useCart` that provides
   // the cart's state. You'll need to implement this with Zustand, Context, or another state manager.
-  const { items, totalPrice, totalItems, clearCart } = useCart();
+  const { items, totalPrice, totalItems, clearCart, addOrderId } = useCart();
   const params = useParams();
   //   const router = useRouter();
 
@@ -32,6 +32,7 @@ function MiniCart() {
             title: "Order Created",
             description: "Your order has been successfully created!",
           });
+          addOrderId(response.orderCode);
           clearCart();
           //   Redirect(`/${params.lang}/myorder`);
 

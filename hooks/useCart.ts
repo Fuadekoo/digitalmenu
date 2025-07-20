@@ -19,10 +19,12 @@ interface CartState {
   items: CartItem[];
   totalItems: number;
   totalPrice: number;
+  orderIds: string[]; // Array to store created order IDs
   addItem: (item: Product) => void;
   removeItem: (itemId: string) => void;
   updateItemQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
+  addOrderId: (orderId: string) => void; // Action to save a new order ID
 }
 
 // A helper function to calculate totals to avoid code repetition.
@@ -41,6 +43,7 @@ export const useCart = create<CartState>()(
       items: [],
       totalItems: 0,
       totalPrice: 0,
+      orderIds: [], // Initialize the orderIds array
 
       // --- ACTIONS ---
 
@@ -103,9 +106,20 @@ export const useCart = create<CartState>()(
       clearCart: () => {
         set({ items: [], totalItems: 0, totalPrice: 0 });
       },
+
+      /**
+       * Adds a new order ID to the list for tracking.
+       */
+      addOrderId: (orderId: string) => {
+        const { orderIds } = get();
+        // Avoid adding duplicate IDs
+        if (!orderIds.includes(orderId)) {
+          set({ orderIds: [...orderIds, orderId] });
+        }
+      },
     }),
     {
-      name: "digital-menu-cart-storage", // Name for the item in localStorage
+      name: "digital-menu-cart-storage", //
       storage: createJSONStorage(() => localStorage), // Use localStorage for persistence
     }
   )
