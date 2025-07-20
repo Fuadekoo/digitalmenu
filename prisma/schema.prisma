@@ -117,8 +117,8 @@ model feedBack {
 
 model promotion {
   id          String   @id @default(cuid())
-  title       String
-  description String
+  title       String?
+  description String?
   photo       String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

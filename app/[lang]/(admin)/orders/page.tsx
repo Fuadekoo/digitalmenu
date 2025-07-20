@@ -16,6 +16,7 @@ interface OrderItem {
   id: string | number;
   key?: string | number;
   orderId: string;
+  name: string;
   productId: string;
   photo: string;
   quantity: number;
@@ -26,6 +27,8 @@ interface Order {
   id: string | number;
   key?: string | number;
   orderCode: string;
+  tNumber?: string;
+  roomNumber?: string;
   totalAmount: number;
   status: string;
   createdAt: string;
@@ -99,9 +102,10 @@ function Page() {
             items.map((item) => ({
               id: item.id,
               orderId: item.orderId,
+              name: item.tName,
               productId: item.productId,
               quantity: item.quantity,
-              photo: item.product?.photo || "",
+              photo: item.photo,
               price: item.price,
             }))
           );
@@ -155,9 +159,19 @@ function Page() {
       renderCell: (item) => item.orderCode,
     },
     {
+      key: "tNumber",
+      label: "Table Number",
+      renderCell: (item) => item.tNumber,
+    },
+    {
+      key: "roomNumber",
+      label: "Room Number",
+      renderCell: (item) => `${item.roomNumber}`,
+    },
+    {
       key: "totalAmount",
       label: "Total Amount",
-      renderCell: (item) => `$${item.totalPrice}`,
+      renderCell: (item) => `${item.totalPrice}`,
     },
     {
       key: "location",
@@ -248,8 +262,8 @@ function Page() {
               <ul>
                 {orderItems.map((item) => (
                   <li key={item.id} className="py-2 border-b">
-                    Product ID: {item.productId}, Quantity: {item.quantity},
-                    Price: ${item.price}
+                    Product Name: {item.name}, Quantity: {item.quantity}, Price:
+                    ${item.price}
                     {/* Photo: {item.photo} */}
                     <img
                       src={`/api/filedata/${item.photo}`}

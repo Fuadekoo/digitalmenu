@@ -103,11 +103,36 @@ async function main() {
     ],
   });
 
+  // Promotions
+  await prisma.promotion.createMany({
+    data: [
+      {
+        title: "Summer Special",
+        description: "Get 20% off on all pizzas!",
+        photo: "/promo-summer.jpg",
+      },
+      {
+        title: "Drink Deal",
+        description: "Buy 2 drinks, get 1 free.",
+        photo: "/promo-drinks.jpg",
+      },
+      {
+        title: "Welcome Offer",
+        description: "Free dessert for new guests.",
+        photo: "/promo-welcome.jpg",
+      },
+    ],
+  });
+
   // Orders
   const table1 = await prisma.table.findFirst({ where: { tNumber: 1 } });
   const table2 = await prisma.table.findFirst({ where: { tNumber: 2 } });
-  const pizza = await prisma.product.findFirst({ where: { name: "Margherita Pizza" } });
-  const pepperoni = await prisma.product.findFirst({ where: { name: "Pepperoni Pizza" } });
+  const pizza = await prisma.product.findFirst({
+    where: { name: "Margherita Pizza" },
+  });
+  const pepperoni = await prisma.product.findFirst({
+    where: { name: "Pepperoni Pizza" },
+  });
   const coke = await prisma.product.findFirst({ where: { name: "Coke" } });
   const water = await prisma.product.findFirst({ where: { name: "Water" } });
 

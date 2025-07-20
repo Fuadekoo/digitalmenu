@@ -12,7 +12,7 @@ export async function createProduct(data: z.infer<typeof productSchema>) {
     const parsedData = productSchema.safeParse(data);
     if (!parsedData.success) {
       console.log(parsedData.error);
-      throw new Error("Invalid product data");
+      return { message: "Invalid product data" };
     }
 
     let photoUrl: string | undefined = undefined;
@@ -118,7 +118,7 @@ export async function deleteProduct(id: string) {
     return { message: "Product deleted successfully" };
   } catch (error) {
     console.error("Error deleting product:", error);
-    return { message: "Failed to delete product" };
+    return { message: "Failed to delete product because it has a relation" };
   }
 }
 
@@ -127,18 +127,49 @@ export async function updateProduct(
   data: z.infer<typeof productSchema>
 ) {
   try {
-    // Validate input
     const parsedData = productSchema.safeParse(data);
     if (!parsedData.success) {
       console.log(parsedData.error);
-      throw new Error("Invalid product data");
+      return { message: "Invalid product data" };
+    }
+
+    let photoUrl: string | undefined = undefined;
+    if (data.photo) {
+      // Assume data.photo is a base64 string or a Buffer
+      // Generate unique filename
+      const ext = ".jpg"; // or parse from data.photo if you have mime info
+      const uniqueName = `${randomUUID()}${ext}`;
+      const filePath = path.join(process.cwd(), "filedata", uniqueName);
+
+      // Save file
+      let buffer: Buffer;
+      if (typeof data.photo === "string" && data.photo.startsWith("data:")) {
+        // base64 data URL
+        const base64 = data.photo.split(",")[1];
+        buffer = Buffer.from(base64, "base64");
+      } else if (typeof data.photo === "string") {
+        buffer = Buffer.from(data.photo, "base64");
+      } else {
+        buffer = data.photo;
+      }
+      await fs.mkdir(path.dirname(filePath), { recursive: true });
+      await fs.writeFile(filePath, buffer);
+      photoUrl = uniqueName;
     }
 
     // Update product in the database
     await prisma.product.update({
       where: { id },
       data: {
-        ...data,
+        name: data.name,
+        price: data.price,
+        discount: data.discount,
+        quantity: data.quantity,
+        isAvailable: data.isAvailable,
+        isFeatured: data.isFeatured,
+        categoryId: data.categoryId,
+        description: data.description,
+        photo: photoUrl ?? "",
       },
     });
 

@@ -41,9 +41,8 @@ export async function getWaiters(
         hasPreviousPage: page > 1,
       },
     };
-  } catch (error) {
-    console.error("Error in getWaiters:", error);
-    throw error;
+  } catch {
+    return { message: "Failed to fetch waiters." };
   }
 }
 
@@ -53,8 +52,7 @@ export async function deleteWaiter(id: string) {
       where: { id },
     });
     return { message: "Waiter deleted successfully." };
-  } catch (error) {
-    console.error("Error in deleteWaiter:", error);
+  } catch {
     return { message: "Failed to delete waiter." };
   }
 }
@@ -62,15 +60,14 @@ export async function deleteWaiter(id: string) {
 export async function createWaiter(data: z.infer<typeof waiterSchema>) {
   try {
     const { name, phone } = data;
-     await prisma.waiters.create({
+    await prisma.waiters.create({
       data: {
         name,
         phone,
       },
     });
     return { message: "Waiter created successfully." };
-  } catch (error) {
-    console.error("Error in createWaiter:", error);
+  } catch {
     return { message: "Failed to create waiter." };
   }
 }
@@ -81,7 +78,7 @@ export async function updateWaiter(
 ) {
   try {
     const { name, phone } = data;
-     await prisma.waiters.update({
+    await prisma.waiters.update({
       where: { id },
       data: {
         name,
@@ -89,8 +86,7 @@ export async function updateWaiter(
       },
     });
     return { message: "Waiter updated successfully." };
-  } catch (error) {
-    console.error("Error in updateWaiter:", error);
+  } catch {
     return { message: "Failed to update waiter." };
   }
 }

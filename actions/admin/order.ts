@@ -69,12 +69,27 @@ export async function getOrderItems(orderId: string) {
   try {
     const orderItems = await prisma.orderItem.findMany({
       where: { orderId },
-      // select: {},
       include: {
+        order: {
+          include: { table: { select: { tNumber: true, roomNumber: true } } },
+        },
         product: { select: { name: true, photo: true } },
       },
     });
-    return orderItems;
+
+    const formattedOrderItems = orderItems.map((item) => ({
+      id: item.id,
+      orderId: item.orderId,
+      productId: item.productId,
+      quantity: item.quantity,
+      photo: item.product?.photo || "",
+      price: item.price,
+      tName: item.product?.name || "",
+      tNumber: item.order?.table?.tNumber || "",
+      roomNumber: item.order?.table?.roomNumber || "",
+    }));
+    console.log("Formatted Order Items:", formattedOrderItems);
+    return formattedOrderItems;
   } catch (error) {
     console.error("Error fetching order items:", error);
     return { message: "Failed to fetch order items" };

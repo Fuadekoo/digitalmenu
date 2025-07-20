@@ -18,7 +18,9 @@ export async function createTable(data: z.infer<typeof tableSchema>) {
     });
 
     if (existingTable) {
-      throw new Error("A table with this name or number already exists.");
+      return {
+        message: "A table with this name or number already exists.",
+      };
     }
 
     // Create the new table
@@ -29,12 +31,8 @@ export async function createTable(data: z.infer<typeof tableSchema>) {
         waiterId,
       },
     });
-  } catch (error) {
-    throw new Error(
-      `Failed to create table: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
+  } catch {
+    return { message: "Failed to create table" };
   }
 }
 
@@ -86,12 +84,8 @@ export async function getTables(
         hasPreviousPage: page > 1,
       },
     };
-  } catch (error) {
-    throw new Error(
-      `Failed to get tables: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
+  } catch {
+    return { message: "Failed to fetch tables" };
   }
 }
 
@@ -115,7 +109,10 @@ export async function updateTable(
     });
 
     if (existingTable) {
-      throw new Error("A table with this name or number already exists.");
+      return {
+        message: "A table with this name or number already exists.",
+      };
+      // throw new Error("A table with this name or number already exists.");
     }
 
     // Update the table
@@ -127,12 +124,10 @@ export async function updateTable(
         waiterId,
       },
     });
-  } catch (error) {
-    throw new Error(
-      `Failed to update table: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
+  } catch {
+    // console.error("Error updating table:", error);
+    return { message: "Failed to update table" };
+    // throw new Error("Failed to update table");
   }
 }
 
@@ -144,7 +139,7 @@ export async function deleteTable(id: string) {
     });
 
     if (!existingTable) {
-      throw new Error("Table not found.");
+      return { message: "Table not found." };
     }
 
     // Delete the table
@@ -154,11 +149,7 @@ export async function deleteTable(id: string) {
 
     return { message: "Table deleted successfully." };
   } catch (error) {
-    throw new Error(
-      `Failed to delete table: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
+    return { message: "Failed to delete table" };
   }
 }
 
@@ -170,7 +161,7 @@ export async function getTableQRCode(id: string) {
     });
 
     if (!table) {
-      throw new Error("Table not found.");
+      return { message: "Table not found." };
     }
 
     const domainName = process.env.DOMAIN_NAME;
@@ -180,16 +171,12 @@ export async function getTableQRCode(id: string) {
     });
 
     if (!passcode) {
-      throw new Error("Admin passcode not found.");
+      return { message: "Admin passcode not found." };
     }
 
     return `${domainName}/${passcode.clientPassCode}/${table.id}`;
-  } catch (error) {
-    throw new Error(
-      `Failed to get table QR code: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
+  } catch {
+    return { message: "Failed to generate QR code" };
   }
 }
 
@@ -201,6 +188,5 @@ export async function getWaiterData() {
     },
   });
 
-  return waiters
+  return waiters;
 }
-  
