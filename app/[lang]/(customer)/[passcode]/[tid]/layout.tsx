@@ -11,7 +11,7 @@ export default async function Layout({
   params,
 }: {
   children: React.ReactNode;
-  params: { passcode: string; tid: string };
+  params: { lang: string; passcode: string; tid: string };
 }) {
   // Define menu inside the function to access params
   const menu = [

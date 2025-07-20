@@ -2,7 +2,14 @@
 import Footer from "@/components/footer";
 import React, { useState } from "react";
 import { Input } from "@heroui/react";
-import { ChevronLeft, ChevronRight, PlusCircle, Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Minus,
+  Plus,
+  PlusCircle,
+  Search,
+} from "lucide-react";
 import useAction from "@/hooks/useActions";
 import {
   getPromotion,
@@ -11,6 +18,8 @@ import {
   specialOffers,
 } from "@/actions/customer/home";
 import Link from "next/link";
+import MiniCart from "@/components/mini-cart";
+import { useCart, CartItem } from "@/hooks/useCart";
 
 // --- Reusable Components for Loading/Empty States ---
 
@@ -21,6 +30,41 @@ const SkeletonLoader = ({ className }: { className?: string }) => (
 const EmptyState = ({ message }: { message: string }) => (
   <div className="text-center py-10 text-gray-500">{message}</div>
 );
+
+// --- Add to Cart Button Component ---
+function AddToCartButton({ item }: { item: Omit<CartItem, "quantity"> }) {
+  const { items, addItem, updateItemQuantity } = useCart();
+  const cartItem = items.find((i) => i.id === item.id);
+
+  if (!cartItem) {
+    return (
+      <button
+        onClick={() => addItem(item)}
+        className="mt-2 w-full bg-primary-500 text-white rounded-lg py-1.5 text-sm font-semibold hover:bg-primary-600 transition flex items-center justify-center gap-1"
+      >
+        <PlusCircle size={16} /> Add
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-2 flex items-center justify-around w-full bg-primary-500 text-white rounded-lg text-sm font-semibold">
+      <button
+        onClick={() => updateItemQuantity(item.id, cartItem.quantity - 1)}
+        className="p-2 rounded-l-lg hover:bg-primary-600 transition-colors"
+      >
+        <Minus size={16} />
+      </button>
+      <span className="font-bold text-base">{cartItem.quantity}</span>
+      <button
+        onClick={() => updateItemQuantity(item.id, cartItem.quantity + 1)}
+        className="p-2 rounded-r-lg hover:bg-primary-600 transition-colors"
+      >
+        <Plus size={16} />
+      </button>
+    </div>
+  );
+}
 
 function Page() {
   const [search, setSearch] = useState("");
@@ -69,7 +113,7 @@ function Page() {
   };
 
   return (
-    <div className="w-full min-h-screen overflow-x-hidden bg-gray-50">
+    <div className="w-full min-h-screen overflow-x-hidden bg-gray-50 pb-24">
       <div className="relative mb-4">
         <Input
           type="text"
@@ -83,7 +127,6 @@ function Page() {
           aria-hidden="true"
         />
       </div>
-
       {/* --- Promotions Carousel --- */}
       <div className="relative overflow-hidden rounded-2xl shadow-lg mb-6 h-60">
         {isLoadingPromotion ? (
@@ -100,7 +143,7 @@ function Page() {
                   className="flex-shrink-0 w-full h-full relative"
                 >
                   <img
-                    src={item.photo}
+                    src={`/api/filedata/${item.photo}`}
                     alt={item.title ?? "Promotion"}
                     className="object-cover w-full h-full"
                   />
@@ -129,7 +172,6 @@ function Page() {
           <EmptyState message="No promotions available right now." />
         )}
       </div>
-
       {/* --- Categories Section --- */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2 px-1">
@@ -158,7 +200,11 @@ function Page() {
                   className="flex-shrink-0 flex flex-col items-center w-24 gap-2 text-center"
                 >
                   <img
-                    src={cat.photo ?? "/default-category.png"}
+                    src={
+                      cat.photo
+                        ? `/api/filedata/${cat.photo}`
+                        : "/default-category.png"
+                    }
                     alt={cat.cname}
                     className="w-20 h-20 object-cover rounded-full shadow-md"
                   />
@@ -169,7 +215,6 @@ function Page() {
               ))}
         </div>
       </div>
-
       {/* --- Special Offers Section --- */}
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-800 mb-2 px-1">
@@ -185,24 +230,36 @@ function Page() {
             : specialOfferData?.map((item) => (
                 <div
                   key={item.id}
-                  className="flex-shrink-0 w-64 bg-white rounded-xl shadow-md overflow-hidden"
+                  className="relative flex-shrink-0 w-64 bg-white rounded-xl shadow-md overflow-hidden flex flex-col"
                 >
                   <img
-                    src={item.photo}
+                    src={`/api/filedata/${item.photo}`}
                     alt={item.name}
                     className="w-full h-32 object-cover"
                   />
-                  <div className="p-3">
-                    <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                    <p className="text-lg font-bold text-primary-600">
-                      ${item.price}
-                    </p>
+                  <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    {item.discount}% OFF
+                  </div>
+                  <div className="p-3 flex-grow flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-800 truncate">
+                        {item.name}
+                      </h3>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <p className="text-lg font-bold text-primary-600">
+                          ${item.price.toFixed(2)}
+                        </p>
+                        <p className="text-sm text-gray-500 line-through">
+                          ${item.oldPrice.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                    <AddToCartButton item={item} />
                   </div>
                 </div>
               ))}
         </div>
       </div>
-
       {/* --- All Food Section --- */}
       <div>
         <h2 className="text-xl font-bold text-gray-800 mb-2 px-1">All Food</h2>
@@ -221,7 +278,7 @@ function Page() {
                   className="bg-white rounded-xl shadow-md flex flex-col"
                 >
                   <img
-                    src={item.photo}
+                    src={`/api/filedata/${item.photo}`}
                     alt={item.name}
                     className="w-full h-32 object-cover rounded-t-xl"
                   />
@@ -231,19 +288,17 @@ function Page() {
                         {item.name}
                       </h3>
                       <p className="text-lg font-bold text-primary-600">
-                        ${item.price}
+                        ${item.price.toFixed(2)}
                       </p>
                     </div>
-                    <button className="mt-2 w-full bg-primary-500 text-white rounded-lg py-1.5 text-sm font-semibold hover:bg-primary-600 transition flex items-center justify-center gap-1">
-                      <PlusCircle size={16} /> Add
-                    </button>
+                    <AddToCartButton item={item} />
                   </div>
                 </div>
               ))}
         </div>
       </div>
-
       <Footer />
+      <MiniCart />
     </div>
   );
 }
