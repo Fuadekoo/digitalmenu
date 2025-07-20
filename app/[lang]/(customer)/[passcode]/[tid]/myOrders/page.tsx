@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { X, FileText, ShoppingBag, Loader2 } from "lucide-react";
 import useAction from "@/hooks/useActions";
-import { gateOrderData, gateOrderIds } from "@/actions/customer/myorder"; // Ensure this action exists and accepts an array of IDs
+import { gateOrderIds } from "@/actions/customer/myorder"; // Ensure this action exists and accepts an array of IDs
 import { useCart } from "@/hooks/useCart"; // To get order IDs from localStorage
 
 // --- Interfaces for our data structures (matching Prisma schema) ---
@@ -42,21 +42,11 @@ const getStatusClass = (status: Order["status"]) => {
 
 function Page() {
   const { orderIds } = useCart(); // Get the list of order IDs from the cart store
+  console.log("Order IDs from cart:", orderIds);
   // Pass the orderIds array to the useAction hook to fetch the data
   const [orderdata, refresh, isLoadingOrder] = useAction(
     gateOrderIds,
-    [
-      true,
-      (response) => {
-        if (response) {
-          // Handle successful order data retrieval
-          console.log("Order Data:", response);
-        } else {
-          // Handle error in retrieving order data
-          console.error("Failed to retrieve order data");
-        }
-      },
-    ],
+    [true, () => {}],
     orderIds
   );
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -105,8 +95,8 @@ function Page() {
                   </p>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-500">Table</p>
-                  <p className="text-gray-900">{order.tableId ?? "N/A"}</p>
+                  <p className="font-semibold text-gray-500">Table Number</p>
+                  <p className="text-gray-900">{order.table?.tNumber}</p>
                 </div>
                 <div>
                   <p className="font-semibold text-gray-500">Total</p>
@@ -126,13 +116,13 @@ function Page() {
                 </div>
               </div>
               <div className="flex-shrink-0 w-full sm:w-auto">
-                {/* <button
+                <button
                   onClick={() => setSelectedOrder(order)}
                   className="w-full sm:w-auto bg-primary-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
                 >
                   <FileText size={16} />
                   Details
-                </button> */}
+                </button>
               </div>
             </div>
           ))}

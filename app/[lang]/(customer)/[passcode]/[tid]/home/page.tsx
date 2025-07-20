@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import MiniCart from "@/components/mini-cart";
 import { useCart, CartItem } from "@/hooks/useCart";
+import ProductPerCategoryId from "@/components/productper-catagoryId";
 
 // --- Reusable Components for Loading/Empty States ---
 
@@ -68,6 +69,9 @@ function AddToCartButton({ item }: { item: Omit<CartItem, "quantity"> }) {
 
 function Page() {
   const [search, setSearch] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null
+  );
   const [promotionData, , isLoadingPromotion] = useAction(getPromotion, [
     true,
     () => {},
@@ -112,6 +116,17 @@ function Page() {
     );
   };
 
+  // If a category is selected, render the product list for that category.
+  if (selectedCategoryId) {
+    return (
+      <ProductPerCategoryId
+        categoryId={selectedCategoryId}
+        onBack={() => setSelectedCategoryId(null)} // This function allows the user to go back
+      />
+    );
+  }
+
+  // Otherwise, render the main home page.
   return (
     <div className="w-full min-h-screen overflow-x-hidden bg-gray-50 pb-24">
       <div className="relative mb-4">
@@ -197,7 +212,8 @@ function Page() {
             : categoryData?.map((cat) => (
                 <div
                   key={cat.id}
-                  className="flex-shrink-0 flex flex-col items-center w-24 gap-2 text-center"
+                  onClick={() => setSelectedCategoryId(cat.id)}
+                  className="flex-shrink-0 flex flex-col items-center w-24 gap-2 text-center cursor-pointer"
                 >
                   <img
                     src={

@@ -21,11 +21,6 @@ export default async function Layout({
       icon: <Home size={18} />,
     },
     {
-      label: "Cart",
-      url: `/${params.passcode}/${params.tid}/cart`,
-      icon: <Package size={18} />,
-    },
-    {
       label: "My Orders",
       url: `/${params.passcode}/${params.tid}/myorders`,
       icon: <Package size={18} />,

@@ -165,8 +165,8 @@ function Header({
         <button
           onClick={() => {
             const pathname = window.location.pathname;
-            const [, passcode, tid] = pathname.split("/");
-            window.location.href = `/en/${passcode}/${tid}/cart`;
+            const [, lang, passcode, tid] = pathname.split("/");
+            window.location.href = `/${lang}/${passcode}/${tid}/myorders`;
           }}
         >
           <svg

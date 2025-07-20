@@ -123,3 +123,12 @@ model promotion {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

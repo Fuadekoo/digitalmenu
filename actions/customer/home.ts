@@ -72,3 +72,15 @@ export async function listProductByCategory(categoryId: string) {
     return [];
   }
 }
+
+export async function getCategoryName(categoryId: string) {
+  try {
+    const category = await prisma.productCategory.findUnique({
+      where: { id: categoryId },
+    });
+    return category?.cname;
+  } catch (error) {
+    console.error("Error fetching category data:", error);
+    return null;
+  }
+}

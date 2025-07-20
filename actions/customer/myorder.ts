@@ -1,5 +1,6 @@
 "use server";
 import prisma from "@/lib/db";
+// gate the tableid from params
 
 // gate the orderdata using orderid
 export async function gateOrderData(orderId: string) {
@@ -7,21 +8,14 @@ export async function gateOrderData(orderId: string) {
     // Check if the order exists
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      select: {
-        id: true,
-        orderCode: true,
-        tableId: true,
-        totalPrice: true,
-        createdAt: true,
-        status: true,
+      // FIX: Use `include` to get related data, not a mix of `select` and `include`.
+      include: {
+        table: {
+          select: { id: true, name: true },
+        },
         orderItems: {
           include: {
-            product: { select: { id: true, name: true, photo: true } },
-          },
-          select: {
-            productId: true,
-            quantity: true,
-            price: true,
+            product: true,
           },
         },
       },
@@ -42,35 +36,34 @@ export async function gateOrderData(orderId: string) {
 // gate the orderIds then fetch all orders
 export async function gateOrderIds(orderIds: string[]) {
   try {
+    // Add a guard clause to handle empty input.
+    if (!orderIds || orderIds.length === 0) {
+      console.log("No order IDs provided, returning empty array.");
+      return [];
+    }
+
     console.log("Fetching orders for IDs:", orderIds);
     // Fetch all orders with the given orderIds
     const orders = await prisma.order.findMany({
       where: { orderCode: { in: orderIds } },
-      select: {
-        id: true,
-        orderCode: true,
-        tableId: true,
-        totalPrice: true,
-        createdAt: true,
-        status: true,
+      // FIX: Use `include` to get related data.
+      include: {
+        table: true,
         orderItems: {
           include: {
-            product: { select: { id: true, name: true, photo: true } },
-          },
-          select: {
-            productId: true,
-            quantity: true,
-            price: true,
+            product: true,
           },
         },
       },
+      orderBy: { createdAt: "desc" },
     });
 
     console.log("Fetched Orders:", orders);
 
     return orders;
-  } catch {
+  } catch (error) {
     // Optionally log error here
+    console.error("Error fetching orders by IDs:", error);
     return [];
   }
 }
