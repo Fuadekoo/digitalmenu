@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   // output   = "../app/generated/prisma"
@@ -15,16 +9,19 @@ datasource db {
 }
 
 model user {
-  id             String   @id @default(cuid())
-  username       String
-  phone          String   @unique
-  password       String
-  role           String   @default("unauthorized") // user, admin, waiter
-  isActive       Boolean  @default(true)
-  clientPassCode String?  @unique
-  chatId         String?  @unique
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                    String         @id @default(cuid())
+  username              String
+  phone                 String         @unique
+  password              String
+  socket                String?
+  role                  String         @default("unauthorized") // user, admin, waiter
+  isActive              Boolean        @default(true)
+  clientPassCode        String?        @unique
+  chatId                String?        @unique
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  notificationsSent     notification[] @relation("NotificationFromUser")
+  notificationsReceived notification[] @relation("NotificationToUser")
 }
 
 model productCategory {
@@ -64,16 +61,19 @@ model waiters {
 }
 
 model table {
-  id         String   @id @default(cuid())
-  name       String
-  tNumber    Int      @unique
-  roomNumber String?
-  waiterId   String?
-  waiter     waiters? @relation(fields: [waiterId], references: [id])
-  isOccupied Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  order      order[]
+  id                    String         @id @default(cuid())
+  name                  String
+  tNumber               Int            @unique
+  roomNumber            String?
+  waiterId              String?
+  socket                String?
+  waiter                waiters?       @relation(fields: [waiterId], references: [id])
+  isOccupied            Boolean        @default(false)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  order                 order[]
+  notificationsSent     notification[] @relation("NotificationFromTable")
+  notificationsReceived notification[] @relation("NotificationToTable")
 }
 
 model order {
@@ -128,7 +128,24 @@ model notification {
   id        String   @id @default(cuid())
   title     String
   message   String
+  type      String // e.g., order, feedback, promotion
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // --- Direction of the Notification ---
+  // Who sent the notification? (Can be an admin/user or a customer at a table)
+  fromUserId  String?
+  fromTableId String?
+
+  // Who is the notification for?
+  toUserId  String?
+  toTableId String?
+
+  // --- Prisma Relations ---
+  // These establish the foreign key constraints
+  fromUser  user?  @relation("NotificationFromUser", fields: [fromUserId], references: [id])
+  fromTable table? @relation("NotificationFromTable", fields: [fromTableId], references: [id])
+  toUser    user?  @relation("NotificationToUser", fields: [toUserId], references: [id])
+  toTable   table? @relation("NotificationToTable", fields: [toTableId], references: [id])
 }
