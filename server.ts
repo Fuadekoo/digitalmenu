@@ -2,7 +2,7 @@ import { createServer } from "http";
 import express from "express";
 import cors from "cors";
 import next from "next";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import prisma from "./lib/db"; // Corrected import path
 
 process.loadEnvFile(".env");
@@ -148,6 +148,10 @@ app
             }
             return { order, adminSocket: admin?.socket };
           });
+
+          // Emit a success event back to the customer who placed the order
+          socket.emit("order_created_successfully", result.order);
+
           if (result.adminSocket) {
             io.to(result.adminSocket).emit(
               "new_order_notification",
