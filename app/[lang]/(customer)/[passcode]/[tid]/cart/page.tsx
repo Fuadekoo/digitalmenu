@@ -163,7 +163,7 @@ function Page() {
           </div>
           <div className="flex justify-between text-gray-700">
             <span>Tax Fee (0%):</span>
-            <span>$0.00</span>
+            {/* <span>$0.00</span> */}
           </div>
           <div className="flex justify-between font-bold text-lg text-gray-800 pt-2 border-t">
             <span>Total Price:</span>

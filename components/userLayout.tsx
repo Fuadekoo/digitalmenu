@@ -6,8 +6,7 @@ import {
   Dropdown,
   DropdownItem,
   DropdownMenu,
-  DropdownTrigger,
-  Link,
+  DropdownTrigger, 
 } from "@heroui/react";
 import { ShoppingBasket, BellRing, LogOutIcon, UserIcon } from "lucide-react";
 // import Theme from "./theme";
@@ -20,6 +19,7 @@ import Image from "next/image";
 // import { div } from "framer-motion/client";
 import { addToast } from "@heroui/toast";
 import { logout } from "@/actions/common/authentication"; // Add this import
+import Link from "next/link";
 // import DateTimeDisplay from "./DateTimeDisplay";
 
 export default function UserLayout({

@@ -11,6 +11,8 @@ import {
   Folder,
   Settings,
 } from "lucide-react";
+// import AdminSocketHandler from "@/components/AdminSocketHandler";
+import { SocketProvider } from "@/components/SocketProvider";
 
 const menu = [
   { label: "Dashboard", url: "dashboard", icon: <Home size={18} /> },
@@ -44,7 +46,7 @@ export default async function Layout({
   return (
     <div className="overflow-hidden h-svh w-svw">
       <UserLayout menu={menu} isManager={isManager}>
-        {children}
+        <SocketProvider userId={session.user.id}>{children}</SocketProvider>
       </UserLayout>
     </div>
   );

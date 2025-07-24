@@ -5,34 +5,38 @@ import { redirect } from "next/navigation";
 import { Home, Package, CreditCard, User } from "lucide-react";
 import LocationPopup from "@/components/LocationPopup";
 import Footer from "@/components/footer";
+// import CustomerSocketHandler from "@/components/CustomerSocketHandler";
+import { SocketProvider } from "@/components/SocketProvider";
 
 export default async function Layout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: { lang: string; passcode: string; tid: string };
+  params: Promise<{ lang: string; passcode: string; tid: string }>;
 }) {
+  const { passcode, lang, tid } = await params;
+
   // Define menu inside the function to access params
   const menu = [
     {
       label: "Home",
-      url: `/${params.passcode}/${params.tid}/home`,
+      url: `/${passcode}/${tid}/home`,
       icon: <Home size={18} />,
     },
     {
       label: "My Orders",
-      url: `/${params.passcode}/${params.tid}/myorders`,
+      url: `/${passcode}/${tid}/myorders`,
       icon: <Package size={18} />,
     },
     {
       label: "Notification",
-      url: `/${params.passcode}/${params.tid}/notification`,
+      url: `/${passcode}/${tid}/notification`,
       icon: <CreditCard size={18} />,
     },
     {
       label: "About",
-      url: `/${params.passcode}/${params.tid}/about`,
+      url: `/${passcode}/${tid}/about`,
       icon: <User size={18} />,
     },
   ];
@@ -49,7 +53,7 @@ export default async function Layout({
     <div className="overflow-hidden h-svh w-svw">
       <UserLayout menu={menu} isManager={isManager}>
         {/* <LocationPopup /> */}
-        {children}
+        <SocketProvider tableId={tid}>{children}</SocketProvider>
         {/* <Footer /> */}
       </UserLayout>
     </div>

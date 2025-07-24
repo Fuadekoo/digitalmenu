@@ -6,6 +6,7 @@ import Link from "next/link";
 import React from "react";
 import useAction from "@/hooks/useActions";
 import { addToast } from "@heroui/toast";
+// import { createCustomerOrder } from "@/server";
 import { createCustomerOrder } from "@/actions/customer/order"; // Adjust the import based on your project structure
 import { useParams } from "next/navigation";
 import { Redirect } from "next";
