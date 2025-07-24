@@ -48,16 +48,12 @@ app
 
       // --- User (Admin/Waiter) Connection Logic ---
       if (socket.data.id) {
-        if (socket.data.role == "admin") {
+        try {
+          console.log(`User ${socket.data.id} connected. Saving socket ID...`);
           await prisma.user.update({
             where: { id: socket.data.id },
             data: { socket: socket.id },
           });
-        } else {
-          
-        }
-        try {
-          console.log(`User ${socket.data.id} connected. Saving socket ID...`);
           console.log(`Successfully saved socket for user ${socket.data.id}.`);
         } catch (error) {
           console.error(
