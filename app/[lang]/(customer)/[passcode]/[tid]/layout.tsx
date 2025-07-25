@@ -7,6 +7,7 @@ import LocationPopup from "@/components/LocationPopup";
 import Footer from "@/components/footer";
 // import CustomerSocketHandler from "@/components/CustomerSocketHandler";
 import { SocketProvider } from "@/components/SocketProvider";
+import TableSocketRegistrar from "@/components/TableSocketRegistrar";
 
 export default async function Layout({
   children,
@@ -53,7 +54,10 @@ export default async function Layout({
     <div className="overflow-hidden h-svh w-svw">
       <UserLayout menu={menu} isManager={isManager}>
         {/* <LocationPopup /> */}
-        <SocketProvider tableId={tid}>{children}</SocketProvider>
+        <SocketProvider tableId={tid}>
+          <TableSocketRegistrar />
+          {children}
+        </SocketProvider>
         {/* <Footer /> */}
       </UserLayout>
     </div>

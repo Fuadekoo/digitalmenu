@@ -66,7 +66,7 @@ model table {
   tNumber               Int            @unique
   roomNumber            String?
   waiterId              String?
-  socket                String?
+  // socket                String?
   waiter                waiters?       @relation(fields: [waiterId], references: [id])
   isOccupied            Boolean        @default(false)
   createdAt             DateTime       @default(now())
@@ -74,6 +74,22 @@ model table {
   order                 order[]
   notificationsSent     notification[] @relation("NotificationFromTable")
   notificationsReceived notification[] @relation("NotificationToTable")
+  TableSocket           TableSocket[]
+}
+
+// --- THIS IS THE FIX ---
+// Create a new model to store active sockets for each table and guest.
+model TableSocket {
+  id        String   @id @default(cuid())
+  tableId   String
+  guestId   String
+  socketId  String   @unique // Each socket ID can only be in the table once
+  createdAt DateTime @default(now())
+
+  table table @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@index([tableId])
+  @@index([guestId])
 }
 
 model order {
