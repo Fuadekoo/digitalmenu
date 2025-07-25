@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react"; // Import useCallback
 import { Bell, Clock } from "lucide-react";
 import { getNotifications } from "@/actions/admin/notifications";
 import { useSocket } from "@/components/SocketProvider";
@@ -33,17 +33,19 @@ function NotificationPage() {
     fetchNotifications();
   }, []);
 
-  // Effect to listen for real-time notifications from the socket
+  // --- THIS IS THE FIX ---
+  // 1. Define the handler using useCallback to ensure it has the latest state.
+  const handleNewNotification = useCallback((newNotification: Notification) => {
+    // The sound is already played by the SocketProvider, so we just update the list
+    setNotifications((prevNotifications) => [
+      newNotification,
+      ...prevNotifications,
+    ]);
+  }, []); // No dependencies needed here for useCallback
+
+  // 2. Update the useEffect hook to correctly manage the socket listener.
   useEffect(() => {
     if (!socket) return;
-
-    const handleNewNotification = (newNotification: any) => {
-      // The sound is already played by the SocketProvider, so we just update the list
-      setNotifications((prevNotifications) => [
-        newNotification,
-        ...prevNotifications,
-      ]);
-    };
 
     // The event name 'new_order_notification' should match what's sent from your server
     socket.on("new_order_notification", handleNewNotification);
@@ -52,7 +54,9 @@ function NotificationPage() {
     return () => {
       socket.off("new_order_notification", handleNewNotification);
     };
-  }, [socket]);
+    // 3. Add `handleNewNotification` to the dependency array.
+  }, [socket, handleNewNotification]);
+  // --- END OF FIX ---
 
   return (
     <div className="p-4 md:p-6 lg:p-8">

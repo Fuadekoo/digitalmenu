@@ -3,47 +3,47 @@ import prisma from "@/lib/db";
 import { z } from "zod";
 import { orderSchema, orderItemSchema } from "@/lib/zodSchema";
 
-export async function createCustomerOrder(
-  orderData: z.infer<typeof orderSchema>
-) {
-  // Validate orderData using orderSchema
-  const parsedOrder = orderSchema.parse(orderData);
+// export async function createCustomerOrder(
+//   orderData: z.infer<typeof orderSchema>
+// ) {
+//   // Validate orderData using orderSchema
+//   const parsedOrder = orderSchema.parse(orderData);
 
-  const totalPrice = parsedOrder.orderItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+//   const totalPrice = parsedOrder.orderItems.reduce(
+//     (sum, item) => sum + item.price * item.quantity,
+//     0
+//   );
 
-  return await prisma.$transaction(async (tx) => {
-    const order = await tx.order.create({
-      data: {
-        tableId: parsedOrder.tableId,
-        clientName: parsedOrder.clientName,
-        phone: parsedOrder.phone,
-        totalPrice,
-        status: "pending",
-        createdBy: "guest",
-      },
-    });
+//   return await prisma.$transaction(async (tx) => {
+//     const order = await tx.order.create({
+//       data: {
+//         tableId: parsedOrder.tableId,
+//         clientName: parsedOrder.clientName,
+//         phone: parsedOrder.phone,
+//         totalPrice,
+//         status: "pending",
+//         createdBy: "guest",
+//       },
+//     });
 
-    const orderItems = await Promise.all(
-      parsedOrder.orderItems.map((item) => {
-        // Validate each item using orderItemSchema
-        const parsedItem = orderItemSchema.parse(item);
-        return tx.orderItem.create({
-          data: {
-            orderId: order.id,
-            productId: parsedItem.productId,
-            quantity: parsedItem.quantity,
-            price: parsedItem.price,
-          },
-        });
-      })
-    );
+//     const orderItems = await Promise.all(
+//       parsedOrder.orderItems.map((item) => {
+//         // Validate each item using orderItemSchema
+//         const parsedItem = orderItemSchema.parse(item);
+//         return tx.orderItem.create({
+//           data: {
+//             orderId: order.id,
+//             productId: parsedItem.productId,
+//             quantity: parsedItem.quantity,
+//             price: parsedItem.price,
+//           },
+//         });
+//       })
+//     );
 
-    return { ...order, orderItems };
-  });
-}
+//     return { ...order, orderItems };
+//   });
+// }
 
 export async function updateCustomerOrder(
   orderId: string,

@@ -1,10 +1,11 @@
 import React from "react";
-import SignIn from "./[lang]/(guest)/signin/page";
+import Scan from "./[lang]/(guest)/scan/page";
+// import SignIn from "./[lang]/(guest)/signin/page";
 
 function Page() {
   return (
     <div>
-      <SignIn />
+      <Scan />
     </div>
   );
 }
