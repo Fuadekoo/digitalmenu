@@ -82,7 +82,7 @@ model table {
 model TableSocket {
   id        String   @id @default(cuid())
   tableId   String
-  guestId   String
+  guestId   String   @unique
   socketId  String   @unique // Each socket ID can only be in the table once
   createdAt DateTime @default(now())
 
@@ -100,6 +100,7 @@ model order {
   location   String?
   phone      String?
   clientName String?
+  guestId    String?
   status     String      @default("pending")
   table      table?      @relation(fields: [tableId], references: [id])
   orderItems orderItem[]

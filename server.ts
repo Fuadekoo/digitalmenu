@@ -49,22 +49,33 @@ async function handleTableRegistration(
 }
 
 async function createCustomerOrder(socket: Socket, io: Server, orderData: any) {
-  const { tableId, cartItems, totalPrice, clientName, phone, guestId } =
-    orderData;
+  // --- THIS IS THE FIX (Part 1) ---
+  // Destructure guestId from the incoming data.
+  const { tableId, cartItems, totalPrice, guestId } = orderData;
+
+  // Add a robust check to ensure all required data, including guestId, is present.
+  // This prevents the server from crashing.
   if (!tableId || !cartItems || !totalPrice || !guestId) {
+    console.error("Validation Error: Invalid order data received.", orderData);
     socket.emit("order_error", { message: "Invalid order data provided." });
     return;
   }
+  // --- END OF FIX (Part 1) ---
+
   try {
     const result = await prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
           tableId,
           totalPrice,
-          clientName,
-          phone,
+          // --- THIS IS THE FIX (Part 2) ---
+          // Directly use the validated guestId from the payload.
+          // The complex and error-prone cookie logic has been removed.
+          guestId: guestId,
           status: "pending",
+          // Make the creator dynamic using the validated guestId.
           createdBy: `guest_${guestId.substring(0, 8)}`,
+          // --- END OF FIX (Part 2) ---
           orderItems: {
             create: cartItems.map((item: any) => ({
               productId: item.productId,
@@ -83,7 +94,7 @@ async function createCustomerOrder(socket: Socket, io: Server, orderData: any) {
           data: {
             title: "New Order Received",
             message: `Order #${order.orderCode.slice(-5)} from table ${
-              order.table ? order.table.tNumber : "unknown"
+              order.table ? order.table.name : "unknown"
             }.`,
             type: "new_order",
             fromTableId: tableId,

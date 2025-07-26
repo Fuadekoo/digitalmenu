@@ -2,69 +2,63 @@
 
 import { useCart } from "@/hooks/useCart";
 import { ShoppingCart, Loader2 } from "lucide-react";
-import React, { useState, useEffect, useMemo } from "react"; // Import useMemo
+import React, { useState, useEffect, useMemo } from "react";
 import { addToast } from "@heroui/toast";
 import { useParams } from "next/navigation";
 import { useSocket } from "@/components/SocketProvider";
+import useGuestSession from "@/hooks/useGuestSession"; // Import the hook to get the user's unique session ID
+// --- THIS IS THE FIX (Part 1) ---
+// Import the hook to get the user's unique session ID.
+// import { useGuestSession } from "@/hooks/useGuestSession";
+// --- END OF FIX (Part 1) ---
 
-/**
- * A floating mini-cart component that appears at the bottom of the screen
- * when items are in the cart.
- */
 function MiniCart() {
-  const { items, totalPrice, totalItems, clearCart, addOrderId } = useCart();
+  const { items, totalPrice, totalItems, clearCart, addOrderId, isHydrated } =
+    useCart();
   const params = useParams();
   const socket = useSocket();
-
   const [isLoading, setIsLoading] = useState(false);
+  // --- THIS IS THE FIX (Part 2) ---
+  // Get the guestId from our cookies
+  const guestId = useGuestSession();
+  // --- END OF FIX (Part 2) ---
 
-  // --- THIS IS THE FIX (Part 1) ---
-  // Create the Audio object once using useMemo. This is more efficient.
-  // Make sure the file exists at 'public/sound/notice.wav'
   const successAudio = useMemo(() => {
-    // Ensure this code only runs on the client where 'window' is available
     if (typeof window !== "undefined") {
       return new Audio("/sound/notice.wav");
     }
     return null;
   }, []);
-  // --- END OF FIX (Part 1) ---
 
   useEffect(() => {
     if (!socket || !successAudio) return;
 
-    // Listen for a success event from the server
     const handleOrderSuccess = (order: any) => {
       setIsLoading(false);
-
-      // Play the sound that was prepared earlier
       successAudio.play().catch((error) => {
         console.error("Audio playback failed:", error);
       });
-
       addToast({
         title: "Order Created",
         description: "Your order has been successfully created!",
-        // type: "success", // Re-enabled for correct styling
+        // type: "success",
       });
       addOrderId(order.orderCode);
       clearCart();
     };
 
-    // Listen for an error event from the server
     const handleOrderError = (error: { message: string }) => {
       setIsLoading(false);
       addToast({
         title: "Order Error",
         description: error.message || "There was an error creating your order.",
-        // type: "error", // Re-enabled for correct styling
+        // type: "error",
       });
     };
 
     socket.on("order_created_successfully", handleOrderSuccess);
     socket.on("order_error", handleOrderError);
 
-    // Cleanup listeners when the component unmounts
     return () => {
       socket.off("order_created_successfully", handleOrderSuccess);
       socket.off("order_error", handleOrderError);
@@ -72,20 +66,27 @@ function MiniCart() {
   }, [socket, clearCart, addOrderId, successAudio]);
 
   const handleCreateOrder = () => {
-    if (isLoading || items.length === 0 || !socket || !successAudio) return;
-
-    // --- THIS IS THE FIX (Part 2) ---
-    // "Prime" the audio by playing and immediately pausing it during the user's click event.
-    // This satisfies the browser's user interaction requirement.
-    successAudio.play();
-    successAudio.pause();
-    // --- END OF FIX (Part 2) ---
+    // Add guestId and isHydrated to the check to prevent sending invalid data.
+    if (!isHydrated || isLoading || items.length === 0 || !socket || !guestId) {
+      console.error("Order creation blocked. Missing data:", {
+        isHydrated,
+        isLoading,
+        itemCount: items.length,
+        socket: !!socket,
+        guestId,
+      });
+      return;
+    }
 
     setIsLoading(true);
 
     const orderData = {
       totalPrice,
       tableId: params.tid as string,
+      // --- THIS IS THE FIX (Part 3) ---
+      // Add the guestId to the data payload sent to the server.
+      guestId: guestId,
+      // --- END OF FIX (Part 3) ---
       cartItems: items.map((item) => ({
         productId: item.id as string,
         quantity: item.quantity as number,
@@ -96,7 +97,8 @@ function MiniCart() {
     socket.emit("create_order", orderData);
   };
 
-  if (!items || items.length === 0) {
+  // Do not render the cart at all until it has been hydrated from storage.
+  if (!isHydrated || !items || items.length === 0) {
     return null;
   }
 
@@ -118,7 +120,7 @@ function MiniCart() {
 
         <button
           onClick={handleCreateOrder}
-          disabled={isLoading || !socket}
+          disabled={isLoading || !socket || !guestId} // Also disable button if guestId is missing
           className="bg-white text-gray-800 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-gray-200 transition-colors flex items-center justify-center w-28 disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
           {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Buy Now"}

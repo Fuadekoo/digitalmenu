@@ -20,6 +20,7 @@ interface CartState {
   totalItems: number;
   totalPrice: number;
   orderIds: string[]; // Array to store created order IDs
+  isHydrated: boolean; // State to track if the store is loaded from localStorage
   addItem: (item: Product) => void;
   removeItem: (itemId: string) => void;
   updateItemQuantity: (itemId: string, quantity: number) => void;
@@ -43,7 +44,8 @@ export const useCart = create<CartState>()(
       items: [],
       totalItems: 0,
       totalPrice: 0,
-      orderIds: [], // Initialize the orderIds array
+      orderIds: [],
+      isHydrated: false, // Initialize hydration state to false
 
       // --- ACTIONS ---
 
@@ -119,8 +121,15 @@ export const useCart = create<CartState>()(
       },
     }),
     {
-      name: "digital-menu-cart-storage", //
-      storage: createJSONStorage(() => localStorage), // Use localStorage for persistence
+      name: "digital-menu-cart-storage",
+      storage: createJSONStorage(() => localStorage),
+      // This function runs once the store has been rehydrated from storage.
+      // We use it to set our isHydrated flag to true.
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.isHydrated = true;
+        }
+      },
     }
   )
 );
