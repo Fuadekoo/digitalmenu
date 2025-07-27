@@ -65,3 +65,10 @@ export const orderSchema = z.object({
   createdBy: z.string().min(1, "CreatedBy is required"),
 });
 export type OrderType = z.infer<typeof orderSchema>;
+
+export const promotionSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  photo: z.string().min(1, "Photo is required"),
+});
+export type PromotionType = z.infer<typeof promotionSchema>;

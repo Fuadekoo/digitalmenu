@@ -16,7 +16,15 @@ export async function getNotifications() {
         toUserId: session.user.id,
       },
       include: {
-        fromTable: true, // Include table details to show the table name
+        fromTable: {
+          select: {
+            id: true,
+            roomNumber: true,
+            tNumber: true,
+            createdAt: true,
+            name: true, // Include table name for better context in notifications
+          },
+        }, // Include table details to show the table name
       },
       orderBy: {
         createdAt: "desc", // Show the newest notifications first
@@ -26,5 +34,22 @@ export async function getNotifications() {
   } catch (error) {
     console.error("Failed to fetch notifications:", error);
     return [];
+  }
+}
+
+export async function markNotificationAsRead(notificationId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("User not authenticated");
+  }
+
+  try {
+    await prisma.notification.update({
+      where: { id: notificationId },
+      data: { isRead: true },
+    });
+  } catch (error) {
+    console.error("Failed to mark notification as read:", error);
+    throw new Error("Failed to update notification status");
   }
 }

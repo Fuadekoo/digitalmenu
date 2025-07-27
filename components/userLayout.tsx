@@ -20,6 +20,7 @@ import Image from "next/image";
 import { addToast } from "@heroui/toast";
 import { logout } from "@/actions/common/authentication"; // Add this import
 import Link from "next/link";
+import NotificationBell from "./NotificationBell";
 // import DateTimeDisplay from "./DateTimeDisplay";
 
 export default function UserLayout({
@@ -162,30 +163,12 @@ function Header({
       <div className="flex justify-between items-center w-full">
         {/* <DateTimeDisplay /> */}
         <h1>fuad</h1>
-        <button
-          onClick={() => {
-            const pathname = window.location.pathname;
-            const [, lang, passcode, tid] = pathname.split("/");
-            window.location.href = `/${lang}/${passcode}/${tid}/myorders`;
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-shopping-cart-icon lucide-shopping-cart"
-          >
-            <circle cx="8" cy="21" r="1" />
-            <circle cx="19" cy="21" r="1" />
-            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          {/* <User sidebar={true} /> */}
+          {/* <User sidebar={true} /> */}
+          </div>
+          {/* <Theme /> */}
         {/* <User sidebar={true} /> */}
       </div>
     </header>

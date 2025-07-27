@@ -47,10 +47,16 @@ export async function specialOffers() {
   }
 }
 
-export async function allFood() {
+export async function allFood(search?: string) {
   try {
     const foodItems = await prisma.product.findMany({
       include: { category: true },
+      where: {
+        name: {
+          contains: search,
+          // mode: "insensitive",
+        },
+      },
     });
     return foodItems;
   } catch (error) {

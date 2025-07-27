@@ -240,20 +240,7 @@ function Page() {
       label: "Description",
       renderCell: (item) => item.description,
     },
-    {
-      key: "photo",
-      label: "Photo",
-      renderCell: (item) =>
-        item.photo ? (
-          <img
-            src={item.photo}
-            alt={item.name}
-            className="w-14 h-14 object-cover rounded"
-          />
-        ) : (
-          <span className="text-gray-400">No Image</span>
-        ),
-    },
+    { key: "photo", label: "Proof" },
     {
       key: "price",
       label: "Price",

@@ -232,20 +232,7 @@ function CategoryList() {
       label: "Category Name",
       renderCell: (item) => item.cname,
     },
-    {
-      key: "photo",
-      label: "Photo",
-      renderCell: (item) =>
-        item.photo ? (
-          <img
-            src={item.photo}
-            alt={item.cname}
-            className="w-14 h-14 object-cover rounded"
-          />
-        ) : (
-          <span className="text-gray-400">No Image</span>
-        ),
-    },
+    { key: "photo", label: "Proof" },
     {
       key: "createdAt",
       label: "Created At",

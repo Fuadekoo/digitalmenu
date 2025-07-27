@@ -84,10 +84,11 @@ function Page() {
     specialOffers,
     [true, () => {}]
   );
-  const [allFoodData, , isLoadingAllFood] = useAction(allFood, [
-    true,
-    () => {},
-  ]);
+  const [allFoodData, , isLoadingAllFood] = useAction(
+    allFood,
+    [true, () => {}],
+    search
+  );
 
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -280,37 +281,41 @@ function Page() {
       <div>
         <h2 className="text-xl font-bold text-gray-800 mb-2 px-1">All Food</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {isLoadingAllFood
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-md p-2">
-                  <SkeletonLoader className="h-32 rounded-lg mb-2" />
-                  <SkeletonLoader className="w-3/4 h-5 mb-1" />
-                  <SkeletonLoader className="w-1/2 h-4" />
-                </div>
-              ))
-            : allFoodData?.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-xl shadow-md flex flex-col"
-                >
-                  <img
-                    src={`/api/filedata/${item.photo}`}
-                    alt={item.name}
-                    className="w-full h-32 object-cover rounded-t-xl"
-                  />
-                  <div className="p-3 flex-grow flex flex-col justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-800 truncate">
-                        {item.name}
-                      </h3>
-                      <p className="text-lg font-bold text-primary-600">
-                        ${item.price.toFixed(2)}
-                      </p>
-                    </div>
-                    <AddToCartButton item={item} />
-                  </div>
-                </div>
-              ))}
+          {isLoadingAllFood ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-xl shadow-md p-2">
+          <SkeletonLoader className="h-32 rounded-lg mb-2" />
+          <SkeletonLoader className="w-3/4 h-5 mb-1" />
+          <SkeletonLoader className="w-1/2 h-4" />
+              </div>
+            ))
+          ) : allFoodData && allFoodData.length > 0 ? (
+            allFoodData.map((item) => (
+              <div
+          key={item.id}
+          className="bg-white rounded-xl shadow-md flex flex-col"
+              >
+          <img
+            src={`/api/filedata/${item.photo}`}
+            alt={item.name}
+            className="w-full h-32 object-cover rounded-t-xl"
+          />
+          <div className="p-3 flex-grow flex flex-col justify-between">
+            <div>
+              <h3 className="font-semibold text-gray-800 truncate">
+                {item.name}
+              </h3>
+              <p className="text-lg font-bold text-primary-600">
+                ${item.price.toFixed(2)}
+              </p>
+            </div>
+            <AddToCartButton item={item} />
+          </div>
+              </div>
+            ))
+          ) : (
+            <EmptyState message="No food found." />
+          )}
         </div>
       </div>
       <Footer />
