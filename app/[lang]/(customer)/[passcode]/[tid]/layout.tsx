@@ -43,10 +43,10 @@ export default async function Layout({
   ];
 
   // Check customer auth using passcode and tid from URL
-  // const isAuth = await customerAuth(params.passcode, params.tid);
-  // if (!isAuth) {
-  //   redirect("/en/forbidden");
-  // }
+  const isAuth = await customerAuth(passcode, tid);
+  if (!isAuth) {
+    redirect("/en/forbidden");
+  }
 
   const isManager = false;
 

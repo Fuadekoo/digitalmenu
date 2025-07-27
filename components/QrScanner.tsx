@@ -1,15 +1,31 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import {
   Html5QrcodeScanner,
-  Html5QrcodeResult,
+  // Html5QrcodeResult,
   // Html5QrcodeError,
 } from "html5-qrcode";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
+import { scan } from "@/actions/customer/scan";
+import useAction from "@/hooks/useActions";
+import useGuestSession from "@/hooks/useGuestSession";
 
 const QrScanner = () => {
   const [scanResult, setScanResult] = useState<string | null>(null);
+  const guestId = useGuestSession();
+  console.log("guestId", guestId);
+  const [scanResponse, scanAction, isLoadingScan] = useAction(scan, [
+    ,
+    (response) => {
+      if (response.success === true) {
+        if (scanResult) {
+          const url = new URL(scanResult);
+          redirect(url.pathname);
+        }
+      }
+    },
+  ]);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -25,20 +41,30 @@ const QrScanner = () => {
           height: 250,
         },
         fps: 5,
+        supportedScanTypes: [0], // 1 = Html5QrcodeScanType.SCAN_TYPE_CAMERA
       },
       false
     );
 
     const onScanSuccess = (
       decodedText: string,
-      decodedResult: Html5QrcodeResult
+      // decodedResult: Html5QrcodeResult
     ) => {
       scanner.clear();
       setScanResult(decodedText);
+      console.log("Scan result:", decodedText);
 
       try {
-        const url = new URL(decodedText);
-        router.push(url.pathname);
+        scanAction(guestId ?? "guest_hifi0sjv31753482126016", decodedText);
+        // if the response is success:true only redirect else display the error message in bellow the scanner
+        if (scanResponse?.success) {
+          setScanResult(null); // Clear the scan result
+          // Redirect to the scanned
+          const url = new URL(decodedText);
+          redirect(url.pathname);
+        } else {
+          setScanResult(scanResponse?.message || "Scan failed.");
+        }
       } catch (error) {
         setScanResult(`Scanned content: ${decodedText}`);
       }
@@ -64,6 +90,18 @@ const QrScanner = () => {
         <div className="text-center">
           <p className="text-green-600 font-semibold">Scan Successful!</p>
           <p className="text-gray-700">Redirecting...</p>
+          {/* display the error message if error  */}
+          <p className="text-red-600 mt-2">{scanResult}</p>
+          <p>{scanResponse?.message}</p>
+          <button
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={() => {
+              setScanResult(null); // Clear the scan result
+              router.push("/"); // Redirect to home or any other page
+            }}
+          >
+            ReScan
+          </button>
         </div>
       ) : (
         <div id="reader" className="w-full max-w-sm"></div>
