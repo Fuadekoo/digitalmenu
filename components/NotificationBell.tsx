@@ -14,6 +14,7 @@ import { formatDistanceToNow } from "date-fns";
 // Define the type for a notification based on your Prisma schema
 type Notification = {
   id: string;
+  title: string;
   message: string;
   isRead: boolean;
   createdAt: string; // Comes as string from server
@@ -35,21 +36,15 @@ const NotificationBell = () => {
     return null;
   }, []);
 
-  const [readResponse, markAsReadAction] = useAction(markNotificationAsRead, [
-    ,
-    () => {},
-  ]);
+  const [, markAsReadAction] = useAction(markNotificationAsRead, [, () => {}]);
 
   // Fetch initial notifications on component mount
   useEffect(() => {
     const fetchNotifications = async () => {
       const initialNotifications = await getNotifications();
-      // Ensure the fetched data matches the Notification type
       setNotifications(
         (initialNotifications as any[]).map((n) => ({
-          id: n.id,
-          message: n.message,
-          isRead: n.isRead,
+          ...n,
           createdAt:
             n.createdAt instanceof Date
               ? n.createdAt.toISOString()
@@ -65,40 +60,33 @@ const NotificationBell = () => {
   useEffect(() => {
     if (!socket) return;
 
-    // --- THIS IS THE FIX ---
-    // The incoming data from the socket needs to be processed just like the initial data.
-    const handleNewNotification = (data: any) => {
-      // Create a properly typed notification object from the socket data.
-      // Crucially, ensure `isRead` is set to `false` for new notifications.
-      const newNotification: Notification = {
-        id: data.id,
-        message: data.message,
-        isRead: false, // Explicitly set as unread
-        createdAt: new Date().toISOString(), // Use current time or server-sent time
-        fromTable: data.fromTable ? { name: data.fromTable.name } : null,
-      };
-
+    const handleNewOrderNotification = (data: Notification) => {
       // Play sound
       notificationSound?.play().catch(console.error);
 
-      // Add the new, correctly formatted notification to the state
-      setNotifications((prev) => [newNotification, ...prev]);
+      // Add the new notification to the top of the list
+      setNotifications((prev) => [data, ...prev]);
 
       // Show a toast
       addToast({
         // type: "info",
-        title: "New Notification",
-        description: newNotification.message,
+        title: data.title || "New Notification",
+        description: data.message,
       });
     };
-    // --- END OF FIX ---
 
-    socket.on("new_notification", handleNewNotification);
+    // --- THIS IS THE FIX ---
+    // The event name now matches the one in your server.ts file.
+    const adminEvent = "new_order_notification";
+    socket.on(adminEvent, handleNewOrderNotification);
 
     return () => {
-      socket.off("new_notification", handleNewNotification);
+      socket.off(adminEvent, handleNewOrderNotification);
     };
+    // --- END OF FIX ---
   }, [socket, notificationSound]);
+
+  // ... (rest of the component is the same)
 
   // Handle clicking outside the dropdown to close it
   useEffect(() => {

@@ -5,6 +5,23 @@ import next from "next";
 import { Server, Socket } from "socket.io";
 import prisma from "./lib/db";
 
+// --- Constants for Socket Events ---
+const Events = {
+  // Client to Server
+  REGISTER_TABLE: "register_table_socket",
+  CREATE_ORDER: "create_order",
+  CONFIRM_ORDER: "confirm_order",
+
+  // Server to Client
+  ORDER_CREATED_SUCCESS: "order_created_successfully",
+  NEW_ORDER_NOTIFICATION: "new_order_notification",
+  ORDER_STATUS_UPDATE: "order_status_update",
+
+  // Error Events
+  GENERAL_ERROR: "socket_error",
+  ORDER_ERROR: "order_error",
+};
+
 // --- Helper Functions for Socket Logic ---
 
 async function handleUserConnection(socket: Socket) {
@@ -19,12 +36,6 @@ async function handleUserConnection(socket: Socket) {
   }
 }
 
-/**
- * Handles registering a customer's socket in the database.
- * @param socket The connecting table's socket.
- * @param tableId The ID of the table to associate with.
- * @param guestId The unique ID of the guest.
- */
 async function handleTableRegistration(
   socket: Socket,
   tableId: string,
@@ -32,35 +43,30 @@ async function handleTableRegistration(
 ) {
   if (!tableId || !guestId) return;
   try {
-    // Create a new entry in the TableSocket table for this connection.
     await prisma.tableSocket.create({
-      data: {
-        tableId: tableId,
-        guestId: guestId,
-        socketId: socket.id,
-      },
+      data: { tableId, guestId, socketId: socket.id },
     });
     console.log(
       `Socket ${socket.id} registered for guest ${guestId} at table ${tableId}`
     );
   } catch (error) {
     console.error(`Error during table socket registration:`, error);
+    socket.emit(Events.GENERAL_ERROR, {
+      message: "Failed to register table.",
+    });
   }
 }
 
 async function createCustomerOrder(socket: Socket, io: Server, orderData: any) {
-  // --- THIS IS THE FIX (Part 1) ---
-  // Destructure guestId from the incoming data.
   const { tableId, cartItems, totalPrice, guestId } = orderData;
 
-  // Add a robust check to ensure all required data, including guestId, is present.
-  // This prevents the server from crashing.
   if (!tableId || !cartItems || !totalPrice || !guestId) {
     console.error("Validation Error: Invalid order data received.", orderData);
-    socket.emit("order_error", { message: "Invalid order data provided." });
+    socket.emit(Events.ORDER_ERROR, {
+      message: "Invalid order data provided.",
+    });
     return;
   }
-  // --- END OF FIX (Part 1) ---
 
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -68,14 +74,9 @@ async function createCustomerOrder(socket: Socket, io: Server, orderData: any) {
         data: {
           tableId,
           totalPrice,
-          // --- THIS IS THE FIX (Part 2) ---
-          // Directly use the validated guestId from the payload.
-          // The complex and error-prone cookie logic has been removed.
-          guestId: guestId,
+          guestId,
           status: "pending",
-          // Make the creator dynamic using the validated guestId.
           createdBy: `guest_${guestId.substring(0, 8)}`,
-          // --- END OF FIX (Part 2) ---
           orderItems: {
             create: cartItems.map((item: any) => ({
               productId: item.productId,
@@ -87,52 +88,66 @@ async function createCustomerOrder(socket: Socket, io: Server, orderData: any) {
         include: { table: true },
       });
 
-      let newNotification = null;
-      const admin = await tx.user.findFirst({ where: { role: "admin" } });
-      if (admin) {
-        newNotification = await tx.notification.create({
-          data: {
-            title: "New Order Received",
-            message: `Order #${order.orderCode.slice(-5)} from table ${
-              order.table ? order.table.name : "unknown"
-            }.`,
-            type: "new_order",
-            fromTableId: tableId,
-            toUserId: admin.id,
-          },
-        });
+      // --- IMPROVEMENT: Notify all admins ---
+      const admins = await tx.user.findMany({ where: { role: "admin" } });
+      const notifications = [];
+      if (admins.length > 0) {
+        for (const admin of admins) {
+          const newNotification = await tx.notification.create({
+            data: {
+              title: "New Order Received",
+              message: `Order #${order.orderCode.slice(-5)} from table ${
+                order.table?.name || "unknown"
+              }.`,
+              type: "new_order",
+              fromTableId: tableId,
+              toUserId: admin.id,
+            },
+          });
+          notifications.push({
+            notification: newNotification,
+            socketId: admin.socket,
+          });
+        }
       }
-      return { order, adminSocket: admin?.socket, newNotification };
+      return { order, notifications };
     });
 
-    socket.emit("order_created_successfully", result.order);
+    socket.emit(Events.ORDER_CREATED_SUCCESS, result.order);
 
-    if (result.adminSocket && result.newNotification) {
-      io.to(result.adminSocket).emit(
-        "new_order_notification",
-        result.newNotification
-      );
+    // Emit notification to each connected admin
+    if (result.notifications.length > 0) {
+      result.notifications.forEach(({ notification, socketId }) => {
+        if (socketId) {
+          io.to(socketId).emit(Events.NEW_ORDER_NOTIFICATION, notification);
+        }
+      });
     }
   } catch (error) {
     console.error("Error creating order:", error);
-    socket.emit("order_error", { message: "Failed to create the order." });
+    socket.emit(Events.ORDER_ERROR, { message: "Failed to create the order." });
   }
 }
 
-/**
- * Handles an admin confirming an order and notifies all guests at the table.
- * @param socket The admin's socket instance.
- * @param io The main Socket.IO server instance.
- * @param orderId The ID of the order to confirm.
- */
 async function handleOrderConfirmation(
   socket: Socket,
   io: Server,
   orderId: string
 ) {
-  const adminUserId = socket.data.id;
-  if (!orderId || !adminUserId) return;
   try {
+    const adminUserId = socket.data.id;
+    if (!orderId || !adminUserId) {
+      throw new Error("Order ID and User ID are required.");
+    }
+
+    // --- IMPROVEMENT: Security check for admin role ---
+    const adminUser = await prisma.user.findUnique({
+      where: { id: adminUserId },
+    });
+    if (!adminUser || adminUser.role !== "admin") {
+      throw new Error("Permission denied. Admin role required.");
+    }
+
     const updatedOrder = await prisma.$transaction(async (tx) => {
       const order = await tx.order.update({
         where: { id: orderId },
@@ -156,31 +171,26 @@ async function handleOrderConfirmation(
     });
 
     if (updatedOrder.tableId) {
-      // 1. Find all active sockets for this table from the database.
       const activeSockets = await prisma.tableSocket.findMany({
         where: { tableId: updatedOrder.tableId },
       });
-
-      // 2. Emit the update to each active socket individually.
       for (const s of activeSockets) {
-        io.to(s.socketId).emit("order_status_update", updatedOrder);
+        io.to(s.socketId).emit(Events.ORDER_STATUS_UPDATE, updatedOrder);
       }
       console.log(
         `Sent 'order_status_update' to ${activeSockets.length} sockets for table ${updatedOrder.tableId}`
       );
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error confirming order:", error);
+    socket.emit(Events.ORDER_ERROR, {
+      message: error.message || "Failed to confirm order.",
+    });
   }
 }
 
-/**
- * Handles cleaning up the database when a socket disconnects.
- * @param socket The disconnecting socket.
- */
 async function handleDisconnect(socket: Socket) {
   console.log("Socket disconnected:", socket.id);
-  // Clear user socket
   if (socket.data.id) {
     try {
       await prisma.user.update({
@@ -191,12 +201,8 @@ async function handleDisconnect(socket: Socket) {
       console.error(`Error clearing socket for user ${socket.data.id}:`, error);
     }
   }
-
-  // When a guest disconnects, remove their entry from the TableSocket table.
   try {
-    await prisma.tableSocket.deleteMany({
-      where: { socketId: socket.id },
-    });
+    await prisma.tableSocket.deleteMany({ where: { socketId: socket.id } });
     console.log(`De-registered disconnected socket ${socket.id}`);
   } catch (error) {
     console.error(`Error de-registering socket ${socket.id}:`, error);
@@ -214,8 +220,8 @@ app
   .prepare()
   .then(async () => {
     const expressApp = express();
-    expressApp.use(express.json());
-    expressApp.use(express.urlencoded({ extended: true }));
+    expressApp.use(express.json({ limit: "50mb" })); // Increase limit for base64 images
+    expressApp.use(express.urlencoded({ extended: true, limit: "50mb" }));
     expressApp.use(
       cors({
         origin: "*",
@@ -239,17 +245,17 @@ app
       next();
     });
 
-    io.on("connection", async (socket) => {
+    io.on("connection", (socket) => {
       console.log("Socket connected:", socket.id);
-      await handleUserConnection(socket);
+      handleUserConnection(socket);
 
-      socket.on("register_table_socket", ({ tableId, guestId }) =>
+      socket.on(Events.REGISTER_TABLE, ({ tableId, guestId }) =>
         handleTableRegistration(socket, tableId, guestId)
       );
-      socket.on("create_order", (orderData) =>
+      socket.on(Events.CREATE_ORDER, (orderData) =>
         createCustomerOrder(socket, io, orderData)
       );
-      socket.on("confirm_order", ({ orderId }) =>
+      socket.on(Events.CONFIRM_ORDER, ({ orderId }) =>
         handleOrderConfirmation(socket, io, orderId)
       );
       socket.on("disconnect", () => handleDisconnect(socket));
