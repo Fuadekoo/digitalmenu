@@ -24,6 +24,8 @@ const Events = {
 
 // --- Helper Functions for Socket Logic ---
 
+
+
 async function handleUserConnection(socket: Socket) {
   if (!socket.data.id) return;
   try {

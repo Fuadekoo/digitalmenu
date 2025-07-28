@@ -8,6 +8,7 @@ export async function getCustomerNotifications(tableId: string) {
   const notifications = await prisma.notification.findMany({
     where: {
       toTableId: tableId,
+      type: "order_confirmed",
     },
     orderBy: {
       createdAt: "desc", // Show the newest notifications first

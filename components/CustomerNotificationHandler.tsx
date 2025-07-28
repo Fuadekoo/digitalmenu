@@ -22,7 +22,7 @@ type CustomerNotification = {
 };
 
 const CustomerNotificationBell = () => {
-  const { tableId } = useParams();
+  const { tid } = useParams();
   const socket = useSocket();
   const [notifications, setNotifications] = useState<CustomerNotification[]>(
     []
@@ -47,9 +47,9 @@ const CustomerNotificationBell = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        if (typeof tableId === "string") {
+        if (typeof tid === "string") {
           // You will need to create this server action
-          const initialNotifications = await getCustomerNotifications(tableId);
+          const initialNotifications = await getCustomerNotifications(tid);
           setNotifications(
             (initialNotifications as any[]).map((n) => ({
               id: n.id,
@@ -62,6 +62,7 @@ const CustomerNotificationBell = () => {
                   : n.createdAt.toISOString(),
             }))
           );
+          // console.log("Initial notifications fetched:", initialNotifications);
         } else {
           console.warn("No valid tableId found for fetching notifications.");
         }
@@ -70,7 +71,7 @@ const CustomerNotificationBell = () => {
       }
     };
     fetchNotifications();
-  }, [tableId]);
+  }, [tid]);
 
   // Set up socket listener for real-time order status updates
   useEffect(() => {

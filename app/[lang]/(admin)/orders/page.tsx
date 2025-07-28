@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import useAction from "@/hooks/useActions";
 import CustomTable from "@/components/custom-table";
 import { Button } from "@heroui/react";
@@ -7,9 +7,10 @@ import { addToast } from "@heroui/toast";
 import {
   getOrder,
   getOrderItems,
-  approveOrder,
+  // approveOrder, // No longer needed
   rejectOrder,
 } from "@/actions/admin/order";
+import { useSocket } from "@/components/SocketProvider";
 import { Loader2 } from "lucide-react";
 
 interface OrderItem {
@@ -41,12 +42,14 @@ interface ColumnDef {
 }
 
 function Page() {
+  const socket = useSocket();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderItemsModal, setShowOrderItemsModal] = useState(false);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [isApproving, setIsApproving] = useState<string | null>(null);
 
   const [orderData, refreshOrders, isLoadingOrders] = useAction(
     getOrder,
@@ -55,24 +58,6 @@ function Page() {
     page,
     pageSize
   );
-
-  const [, executeApproveOrder, isLoadingApprove] = useAction(approveOrder, [
-    ,
-    (response) => {
-      if (response) {
-        addToast({
-          title: "Success",
-          description: "Order approved.",
-        });
-        refreshOrders();
-      } else {
-        addToast({
-          title: "Error",
-          description: "Failed to approve order.",
-        });
-      }
-    },
-  ]);
 
   const [, executeRejectOrder, isLoadingReject] = useAction(rejectOrder, [
     ,
@@ -117,8 +102,49 @@ function Page() {
     ]
   );
 
-  const handleApproveOrder = async (id: string | number) => {
-    await executeApproveOrder(id.toString());
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleOrderConfirmedSuccess = (data: { orderId: string }) => {
+      addToast({
+        title: "Success",
+        description: "Order approved successfully.",
+      });
+      refreshOrders();
+      if (isApproving === data.orderId) {
+        setIsApproving(null);
+      }
+    };
+
+    const handleOrderError = (error: { message: string }) => {
+      addToast({
+        // type: "error",
+        title: "Approval Failed",
+        description: error.message || "An unknown error occurred.",
+      });
+      setIsApproving(null);
+    };
+
+    socket.on("order_confirmed_success", handleOrderConfirmedSuccess);
+    socket.on("order_error", handleOrderError);
+
+    return () => {
+      socket.off("order_confirmed_success", handleOrderConfirmedSuccess);
+      socket.off("order_error", handleOrderError);
+    };
+  }, [socket, refreshOrders, isApproving]);
+
+  const handleApproveOrder = (id: string | number) => {
+    if (!socket) {
+      addToast({
+        // type: "error",
+        title: "Connection Error",
+        description: "Not connected to the server.",
+      });
+      return;
+    }
+    setIsApproving(id.toString());
+    socket.emit("confirm_order", { orderId: id.toString() });
   };
 
   const handleRejectOrder = async (id: string | number) => {
@@ -201,7 +227,6 @@ function Page() {
               handleViewOrderItems({
                 id: item.id,
                 orderCode: item.orderCode,
-                // userId: item.userId,
                 totalAmount: Number(item.totalPrice),
                 status: item.status,
                 createdAt: item.createdAt,
@@ -216,16 +241,20 @@ function Page() {
             color="success"
             variant="flat"
             onPress={() => handleApproveOrder(item.id)}
-            disabled={isLoadingApprove}
+            disabled={isApproving === item.id || item.status !== "pending"}
           >
-            {isLoadingApprove ? "Approving..." : "Approve"}
+            {isApproving === item.id ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "Approve"
+            )}
           </Button>
           <Button
             size="sm"
             color="danger"
             variant="flat"
             onPress={() => handleRejectOrder(item.id)}
-            disabled={isLoadingReject}
+            disabled={isLoadingReject || item.status !== "pending"}
           >
             {isLoadingReject ? "Rejecting..." : "Reject"}
           </Button>
@@ -252,7 +281,9 @@ function Page() {
       {showOrderItemsModal && (
         <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-center items-center p-4 z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4">Order Items</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              Order Items for #{selectedOrder?.orderCode.slice(-5)}
+            </h2>
             {isLoadingOrderItems ? (
               <div className="flex items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin mr-2" />
@@ -264,7 +295,6 @@ function Page() {
                   <li key={item.id} className="py-2 border-b">
                     Product Name: {item.name}, Quantity: {item.quantity}, Price:
                     ${item.price}
-                    {/* Photo: {item.photo} */}
                     <img
                       src={`/api/filedata/${item.photo}`}
                       alt={item.productId}
