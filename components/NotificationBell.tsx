@@ -31,7 +31,7 @@ const NotificationBell = () => {
 
   const notificationSound = useMemo(() => {
     if (typeof window !== "undefined") {
-      return new Audio("/sound/notification.mp3"); // Ensure this file is in /public/sound
+      return new Audio("/sound/notice.wav"); // Ensure this file is in /public/sound
     }
     return null;
   }, []);
@@ -41,17 +41,17 @@ const NotificationBell = () => {
   // Fetch initial notifications on component mount
   useEffect(() => {
     const fetchNotifications = async () => {
-      const initialNotifications = await getNotifications();
-      setNotifications(
-        (initialNotifications as any[]).map((n) => ({
-          ...n,
-          createdAt:
-            n.createdAt instanceof Date
-              ? n.createdAt.toISOString()
-              : n.createdAt,
-          fromTable: n.fromTable ? { name: n.fromTable.name } : null,
-        }))
-      );
+      try {
+        const initialNotifications = await getNotifications();
+        // Assume the server action returns data that matches the Notification type
+        setNotifications(initialNotifications as unknown as Notification[]);
+      } catch (error) {
+        console.error("Failed to fetch initial notifications:", error);
+        addToast({
+          // type: "error",
+          title: "Could not load notifications",
+        });
+      }
     };
     fetchNotifications();
   }, []);
@@ -61,32 +61,30 @@ const NotificationBell = () => {
     if (!socket) return;
 
     const handleNewOrderNotification = (data: Notification) => {
-      // Play sound
+      console.log("Real-time notification received:", data); // Helpful for debugging
+
+      // Play sound for the new notification
       notificationSound?.play().catch(console.error);
 
       // Add the new notification to the top of the list
       setNotifications((prev) => [data, ...prev]);
 
-      // Show a toast
+      // Show a toast to alert the admin
       addToast({
-        // type: "info",
         title: data.title || "New Notification",
         description: data.message,
       });
     };
 
-    // --- THIS IS THE FIX ---
-    // The event name now matches the one in your server.ts file.
+    // This event name MUST match the one being emitted from your server.ts
     const adminEvent = "new_order_notification";
     socket.on(adminEvent, handleNewOrderNotification);
 
+    // Clean up the listener when the component unmounts to prevent memory leaks
     return () => {
       socket.off(adminEvent, handleNewOrderNotification);
     };
-    // --- END OF FIX ---
   }, [socket, notificationSound]);
-
-  // ... (rest of the component is the same)
 
   // Handle clicking outside the dropdown to close it
   useEffect(() => {
@@ -106,13 +104,14 @@ const NotificationBell = () => {
 
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.isRead) {
-      // Optimistically update the UI
+      // Optimistically update the UI for a faster user experience
       setNotifications((prev) =>
         prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
       );
-      // Call the server action
+      // Call the server action to update the database
       markAsReadAction(notification.id);
     }
+    // Close the dropdown after clicking an item
     setIsOpen(false);
   };
 
@@ -126,7 +125,7 @@ const NotificationBell = () => {
       >
         <Bell className="h-6 w-6 text-gray-600" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 block h-5 w-5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center">
+          <span className="absolute top-0 right-0 block h-5 w-5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center animate-pulse">
             {unreadCount}
           </span>
         )}
@@ -158,12 +157,7 @@ const NotificationBell = () => {
                   </div>
                   <div className="flex-grow">
                     <p className="text-sm text-gray-700">
-                      {notification.message}{" "}
-                      {notification.fromTable && (
-                        <span className="font-semibold">
-                          from Table {notification.fromTable.name}
-                        </span>
-                      )}
+                      {notification.message}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
                       {formatDistanceToNow(new Date(notification.createdAt), {
@@ -175,7 +169,7 @@ const NotificationBell = () => {
               ))
             ) : (
               <div className="p-6 text-center text-gray-500">
-                <p>You have no notifications.</p>
+                <p>You have no new notifications.</p>
               </div>
             )}
           </div>

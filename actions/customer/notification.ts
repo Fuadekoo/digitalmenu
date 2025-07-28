@@ -1,12 +1,10 @@
-"use client";
+"use server";
 import prisma from "@/lib/db";
 // get table id from the URL
 // import { useSocket } from "./SocketProvider";
-import { useParams } from "next/navigation";
+// import { useParams } from "next/navigation";
 
-export default async function getNotification() {
-  const params = useParams();
-  const tableId = params.tid as string;
+export async function getCustomerNotifications(tableId: string) {
   const notifications = await prisma.notification.findMany({
     where: {
       toTableId: tableId,
@@ -18,7 +16,7 @@ export default async function getNotification() {
   return notifications;
 }
 
-export async function markAsRead(notificationId: string) {
+export async function markCustomerNotificationAsRead(notificationId: string) {
   try {
     await prisma.notification.update({
       where: { id: notificationId },

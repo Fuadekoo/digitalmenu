@@ -27,12 +27,20 @@ const Events = {
 async function handleUserConnection(socket: Socket) {
   if (!socket.data.id) return;
   try {
-    await prisma.user.update({
+    const user = await prisma.user.findUnique({
       where: { id: socket.data.id },
-      data: { socket: socket.id },
     });
+
+    // --- FIX: Join the admin room if the user is an admin ---
+    if (user && user.role === "admin") {
+      socket.join("admin_room");
+      console.log(`Admin user ${user.id} joined 'admin_room'`);
+    }
   } catch (error) {
-    console.error(`Failed to update socket for user ${socket.data.id}:`, error);
+    console.error(
+      `Failed to process connection for user ${socket.data.id}:`,
+      error
+    );
   }
 }
 
@@ -88,44 +96,56 @@ async function createCustomerOrder(socket: Socket, io: Server, orderData: any) {
         include: { table: true },
       });
 
-      // --- IMPROVEMENT: Notify all admins ---
+      // --- FIX: Create a single notification payload to broadcast ---
       const admins = await tx.user.findMany({ where: { role: "admin" } });
-      const notifications = [];
+      let notificationPayload = null;
       if (admins.length > 0) {
+        const message = `Order #${order.orderCode.slice(-5)} from table ${
+          order.table?.name || "unknown"
+        }.`;
+
+        // This is the object that will be sent to the client
+        notificationPayload = {
+          id: order.id, // Use a unique ID for the key
+          title: "New Order Received",
+          message: message,
+          isRead: false,
+          createdAt: new Date().toISOString(),
+          fromTable: order.table ? { name: order.table.name } : null,
+        };
+
+        // Create the notification records in the database for persistence
         for (const admin of admins) {
-          const newNotification = await tx.notification.create({
+          await tx.notification.create({
             data: {
-              title: "New Order Received",
-              message: `Order #${order.orderCode.slice(-5)} from table ${
-                order.table?.name || "unknown"
-              }.`,
+              title: notificationPayload.title,
+              message: notificationPayload.message,
               type: "new_order",
               fromTableId: tableId,
               toUserId: admin.id,
             },
           });
-          notifications.push({
-            notification: newNotification,
-            socketId: admin.socket,
-          });
         }
       }
-      return { order, notifications };
+      return { order, notificationPayload };
     });
 
+    // Let the customer know their order was created successfully
     socket.emit(Events.ORDER_CREATED_SUCCESS, result.order);
 
-    // Emit notification to each connected admin
-    if (result.notifications.length > 0) {
-      result.notifications.forEach(({ notification, socketId }) => {
-        if (socketId) {
-          io.to(socketId).emit(Events.NEW_ORDER_NOTIFICATION, notification);
-        }
-      });
+    // --- FIX: Broadcast the notification to the 'admin_room' ---
+    if (result.notificationPayload) {
+      io.to("admin_room").emit(
+        Events.NEW_ORDER_NOTIFICATION,
+        result.notificationPayload
+      );
+      console.log("Broadcasted new order notification to 'admin_room'");
     }
   } catch (error) {
     console.error("Error creating order:", error);
-    socket.emit(Events.ORDER_ERROR, { message: "Failed to create the order." });
+    socket.emit(Events.ORDER_ERROR, {
+      message: "Failed to create the order.",
+    });
   }
 }
 
@@ -140,7 +160,6 @@ async function handleOrderConfirmation(
       throw new Error("Order ID and User ID are required.");
     }
 
-    // --- IMPROVEMENT: Security check for admin role ---
     const adminUser = await prisma.user.findUnique({
       where: { id: adminUserId },
     });
@@ -191,19 +210,10 @@ async function handleOrderConfirmation(
 
 async function handleDisconnect(socket: Socket) {
   console.log("Socket disconnected:", socket.id);
-  if (socket.data.id) {
-    try {
-      await prisma.user.update({
-        where: { id: socket.data.id },
-        data: { socket: null },
-      });
-    } catch (error) {
-      console.error(`Error clearing socket for user ${socket.data.id}:`, error);
-    }
-  }
   try {
+    // Clean up guest sockets on disconnect
     await prisma.tableSocket.deleteMany({ where: { socketId: socket.id } });
-    console.log(`De-registered disconnected socket ${socket.id}`);
+    console.log(`De-registered disconnected guest socket ${socket.id}`);
   } catch (error) {
     console.error(`Error de-registering socket ${socket.id}:`, error);
   }
@@ -220,7 +230,7 @@ app
   .prepare()
   .then(async () => {
     const expressApp = express();
-    expressApp.use(express.json({ limit: "50mb" })); // Increase limit for base64 images
+    expressApp.use(express.json({ limit: "50mb" }));
     expressApp.use(express.urlencoded({ extended: true, limit: "50mb" }));
     expressApp.use(
       cors({

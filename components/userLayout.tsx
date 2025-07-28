@@ -6,7 +6,7 @@ import {
   Dropdown,
   DropdownItem,
   DropdownMenu,
-  DropdownTrigger, 
+  DropdownTrigger,
 } from "@heroui/react";
 import { ShoppingBasket, BellRing, LogOutIcon, UserIcon } from "lucide-react";
 // import Theme from "./theme";
@@ -21,6 +21,7 @@ import { addToast } from "@heroui/toast";
 import { logout } from "@/actions/common/authentication"; // Add this import
 import Link from "next/link";
 import NotificationBell from "./NotificationBell";
+import CustomerNotificationHandler from "./CustomerNotificationHandler";
 // import DateTimeDisplay from "./DateTimeDisplay";
 
 export default function UserLayout({
@@ -41,7 +42,11 @@ export default function UserLayout({
     <div className="grid lg:grid-cols-[auto_1fr] overflow-hidden h-screen">
       <Sidebar {...{ sidebar, setSidebar, menu, isManager }} />
       <div className="grid grid-rows-[auto_1fr] gap-2 overflow-hidden">
-        <Header sidebar={sidebar} setSidebar={setSidebar} />
+        <Header
+          sidebar={sidebar}
+          setSidebar={setSidebar}
+          isManager={isManager}
+        />
         <div className="p-2 rounded-xl overflow-y-auto grid">{children}</div>
       </div>
     </div>
@@ -142,10 +147,12 @@ function Sidebar({
 
 function Header({
   // sidebar,
+  isManager,
   setSidebar,
 }: {
   sidebar: boolean;
   setSidebar: React.Dispatch<React.SetStateAction<boolean>>;
+  isManager?: boolean;
 }) {
   //   const [data, ,] = useAction(getUser, [true, () => {}]);
   return (
@@ -164,11 +171,10 @@ function Header({
         {/* <DateTimeDisplay /> */}
         <h1>fuad</h1>
         <div className="flex items-center gap-2">
-          <NotificationBell />
+          {isManager ? <NotificationBell /> : <CustomerNotificationHandler />}
           {/* <User sidebar={true} /> */}
-          {/* <User sidebar={true} /> */}
-          </div>
-          {/* <Theme /> */}
+        </div>
+        {/* <Theme /> */}
         {/* <User sidebar={true} /> */}
       </div>
     </header>

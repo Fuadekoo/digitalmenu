@@ -2,7 +2,7 @@ import React from "react";
 import { customerAuth } from "@/actions/customer/clientauth";
 import UserLayout from "@/components/userLayout";
 import { redirect } from "next/navigation";
-import { Home, Package, CreditCard, User } from "lucide-react";
+import { Home, Package, CreditCard, User, ShoppingBasket } from "lucide-react";
 import LocationPopup from "@/components/LocationPopup";
 import Footer from "@/components/footer";
 // import CustomerSocketHandler from "@/components/CustomerSocketHandler";
@@ -28,7 +28,7 @@ export default async function Layout({
     {
       label: "My Orders",
       url: `/${passcode}/${tid}/myorders`,
-      icon: <Package size={18} />,
+      icon: <ShoppingBasket size={18} />,
     },
     {
       label: "Notification",
