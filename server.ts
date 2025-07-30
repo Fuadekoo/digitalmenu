@@ -215,14 +215,31 @@ async function handleOrderConfirmation(
     });
 
     // --- Broadcast to all sockets for this table (customer) ---
-    if (result.order.tableId) {
-      io.to(`table_${result.order.tableId}`).emit(Events.ORDER_STATUS_UPDATE, {
-        ...result.order,
-        status: "confirmed",
+    // if (result.order.tableId) {
+    //   io.to(`table_${result.order.tableId}`).emit(Events.ORDER_STATUS_UPDATE, {
+    //     ...result.order,
+    //     status: "confirmed",
+    //   });
+    //   console.log(
+    //     `Broadcasted order confirmation to table_${result.order.tableId}`
+    //   );
+    // }
+
+    // --- Broadcast only to the guest who placed the order ---
+    if (result.order.guestId) {
+      const guestSockets = await prisma.tableSocket.findMany({
+        where: { guestId: result.order.guestId },
       });
-      console.log(
-        `Broadcasted order confirmation to table_${result.order.tableId}`
-      );
+
+      for (const s of guestSockets) {
+        io.to(s.socketId).emit(Events.ORDER_STATUS_UPDATE, {
+          ...result.order,
+          status: "confirmed",
+        });
+        console.log(
+          `Broadcasted order confirmation to guest ${result.order.guestId} at socket ${s.socketId}`
+        );
+      }
     }
 
     // Optionally: broadcast notification to admin_room if needed
