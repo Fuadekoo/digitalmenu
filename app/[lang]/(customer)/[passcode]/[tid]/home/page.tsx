@@ -129,14 +129,15 @@ function Page() {
 
   // Otherwise, render the main home page.
   return (
-    <div className="w-full min-h-screen overflow-x-hidden bg-gray-50 pb-24">
+    <div className="w-full min-h-svh overflow-x-hidden bg-gray-50 pb-0">
       <div className="relative mb-4">
         <Input
           type="text"
+          variant="bordered"
           placeholder="Search for food..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-lg border"
+          className="w-full pl-10 pr-4 py-2 rounded-lg text-primary-800 bg-primary-50"
         />
         <Search
           className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
@@ -284,33 +285,33 @@ function Page() {
           {isLoadingAllFood ? (
             Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-white rounded-xl shadow-md p-2">
-          <SkeletonLoader className="h-32 rounded-lg mb-2" />
-          <SkeletonLoader className="w-3/4 h-5 mb-1" />
-          <SkeletonLoader className="w-1/2 h-4" />
+                <SkeletonLoader className="h-32 rounded-lg mb-2" />
+                <SkeletonLoader className="w-3/4 h-5 mb-1" />
+                <SkeletonLoader className="w-1/2 h-4" />
               </div>
             ))
           ) : allFoodData && allFoodData.length > 0 ? (
             allFoodData.map((item) => (
               <div
-          key={item.id}
-          className="bg-white rounded-xl shadow-md flex flex-col"
+                key={item.id}
+                className="bg-white rounded-xl shadow-md flex flex-col"
               >
-          <img
-            src={`/api/filedata/${item.photo}`}
-            alt={item.name}
-            className="w-full h-32 object-cover rounded-t-xl"
-          />
-          <div className="p-3 flex-grow flex flex-col justify-between">
-            <div>
-              <h3 className="font-semibold text-gray-800 truncate">
-                {item.name}
-              </h3>
-              <p className="text-lg font-bold text-primary-600">
-                ${item.price.toFixed(2)}
-              </p>
-            </div>
-            <AddToCartButton item={item} />
-          </div>
+                <img
+                  src={`/api/filedata/${item.photo}`}
+                  alt={item.name}
+                  className="w-full h-32 object-cover rounded-t-xl"
+                />
+                <div className="p-3 flex-grow flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-800 truncate">
+                      {item.name}
+                    </h3>
+                    <p className="text-lg font-bold text-primary-600">
+                      ${item.price.toFixed(2)}
+                    </p>
+                  </div>
+                  <AddToCartButton item={item} />
+                </div>
               </div>
             ))
           ) : (
@@ -318,8 +319,11 @@ function Page() {
           )}
         </div>
       </div>
-      <Footer />
+
       <MiniCart />
+      <div className="bottom-0 left-0 w-full z-50">
+        <Footer />
+      </div>
     </div>
   );
 }

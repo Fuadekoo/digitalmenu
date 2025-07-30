@@ -1,6 +1,5 @@
 "use client";
 import { Button } from "@heroui/button";
-// import { signOut } from "next-auth/react";
 import {
   cn,
   Dropdown,
@@ -9,20 +8,16 @@ import {
   DropdownTrigger,
 } from "@heroui/react";
 import { ShoppingBasket, BellRing, LogOutIcon, UserIcon } from "lucide-react";
-// import Theme from "./theme";
 import { AlignLeft, ChevronLeft, ChevronRight, DoorOpen } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import useAction from "@/hooks/useActions";
-// import { getUser } from "../actions/user/newUser"; // Adjust the import path as necessary
 import Image from "next/image";
-// import { div } from "framer-motion/client";
 import { addToast } from "@heroui/toast";
-import { logout } from "@/actions/common/authentication"; // Add this import
+import { logout } from "@/actions/common/authentication";
 import Link from "next/link";
 import NotificationBell from "./NotificationBell";
 import CustomerNotificationHandler from "./CustomerNotificationHandler";
-// import DateTimeDisplay from "./DateTimeDisplay";
 
 export default function UserLayout({
   children,
@@ -57,8 +52,7 @@ function Sidebar({
   sidebar,
   setSidebar,
   menu,
-}: // isManager,
-{
+}: {
   sidebar: boolean;
   setSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   menu: {
@@ -80,13 +74,13 @@ function Sidebar({
     >
       <div
         className={cn(
-          "relative  bg-blue-950 grid grid-rows-[auto_1fr_auto] overflow-hidden",
+          "relative  bg-purple-950 grid grid-rows-[auto_1fr_auto] overflow-hidden",
           sidebar ? "max-xl:lg:w-60 w-80" : "max-xl:lg:w-14 w-20"
         )}
       >
         <Button
           isIconOnly
-          variant="flat"
+          variant="ghost"
           color="primary"
           size="sm"
           radius="full"
@@ -101,7 +95,7 @@ function Sidebar({
         </Button>
         <div className="flex items-center gap-3 px-5 pt-2 pb-2">
           <Image
-            src="/logo.png" // Place your logo in public/company-logo.png
+            src="/logo.png"
             alt="Qr Menu"
             width={80}
             height={80}
@@ -115,22 +109,36 @@ function Sidebar({
             </span>
           )}
         </div>
-        {/* <Logo sidebar={sidebar} /> */}
         <div className="max-xl:lg:px-2 px-5 pt-3 grid gap-2 auto-rows-min overflow-auto">
-          {menu.map(({ label, url, icon }, i) => (
-            <Button
-              key={i + ""}
-              isIconOnly
-              color="primary"
-              variant={(selected ?? "") == url ? "solid" : "light"}
-              className="w-full px-3 inline-flex gap-5 justify-start"
-              as={Link}
-              href={`/${lang}/${url}`}
-            >
-              {icon}
-              {sidebar && <span className="px-5 capitalize ">{label}</span>}
-            </Button>
-          ))}
+          {menu.map(({ label, url, icon }, i) => {
+            const isActive = (selected ?? "") == url;
+            return (
+              <Button
+                key={i + ""}
+                isIconOnly
+                color="primary"
+                variant={isActive ? "solid" : "light"}
+                className={`
+                  w-full px-3 inline-flex gap-5 justify-start
+                  transition-all duration-200
+                  border
+                  ${
+                    isActive
+                      ? "border-2 border-blue-500 bg-blue-100 shadow-md text-blue-700"
+                      : "border border-transparent"
+                  }
+                  hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 hover:scale-105
+                  active:scale-95
+                  rounded-lg
+                `}
+                as={Link}
+                href={`/${lang}/${url}`}
+              >
+                {icon}
+                {sidebar && <span className="px-5 capitalize">{label}</span>}
+              </Button>
+            );
+          })}
         </div>
         <div className="p-5 max-xl:lg:p-2 grid gap-2 overflow-hidden">
           {/* {isManager && <SelectedTerm />} */}
@@ -146,7 +154,7 @@ function Sidebar({
 }
 
 function Header({
-  // sidebar,
+  sidebar,
   isManager,
   setSidebar,
 }: {
@@ -154,7 +162,6 @@ function Header({
   setSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   isManager?: boolean;
 }) {
-  //   const [data, ,] = useAction(getUser, [true, () => {}]);
   return (
     <header className="z-30 h-12 p-2 flex gap-4 items-center max-lg:shadow-sm bg-white/100">
       <Button
@@ -168,14 +175,10 @@ function Header({
       </Button>
 
       <div className="flex justify-between items-center w-full">
-        {/* <DateTimeDisplay /> */}
         <h1>fuad</h1>
         <div className="flex items-center gap-2">
-          {isManager ? <NotificationBell /> : <CustomerNotificationHandler />}
-          {/* <User sidebar={true} /> */}
+          {/* {isManager ? <NotificationBell /> : <CustomerNotificationHandler />} */}
         </div>
-        {/* <Theme /> */}
-        {/* <User sidebar={true} /> */}
       </div>
     </header>
   );
@@ -184,7 +187,6 @@ function Header({
 function User({ sidebar }: { sidebar: boolean }) {
   const pathname = usePathname() ?? "",
     [, lang] = pathname.split("/");
-  // [data] = useAction(getUser, [true, () => {}]);
 
   return (
     <Dropdown className="overflow-hidden">

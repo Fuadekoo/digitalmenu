@@ -19,6 +19,7 @@ const QrScanner = () => {
     (response) => {
       if (response.success === true) {
         if (scanResult) {
+          console.log("fufu", scanResult);
           const url = new URL(scanResult);
           redirect(url.pathname);
         }
@@ -47,7 +48,7 @@ const QrScanner = () => {
     );
 
     const onScanSuccess = (
-      decodedText: string,
+      decodedText: string
       // decodedResult: Html5QrcodeResult
     ) => {
       scanner.clear();
@@ -97,7 +98,7 @@ const QrScanner = () => {
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             onClick={() => {
               setScanResult(null); // Clear the scan result
-              router.push("/"); // Redirect to home or any other page
+              router.refresh(); // Refresh the page
             }}
           >
             ReScan

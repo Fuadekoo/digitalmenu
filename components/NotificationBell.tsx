@@ -10,7 +10,7 @@ import {
 import useAction from "@/hooks/useActions";
 import { addToast } from "@heroui/toast";
 import { formatDistanceToNow } from "date-fns";
-
+import { SocketEvents } from "@/lib/socketEvents";
 // Define the type for a notification based on your Prisma schema
 type Notification = {
   id: string;
@@ -29,9 +29,10 @@ const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Optional: notification sound
   const notificationSound = useMemo(() => {
     if (typeof window !== "undefined") {
-      return new Audio("/sound/notice.wav"); // Ensure this file is in /public/sound
+      return new Audio("/sound/notice.wav"); // Ensure this file exists in /public/sound
     }
     return null;
   }, []);
@@ -43,12 +44,10 @@ const NotificationBell = () => {
     const fetchNotifications = async () => {
       try {
         const initialNotifications = await getNotifications();
-        // Assume the server action returns data that matches the Notification type
         setNotifications(initialNotifications as unknown as Notification[]);
       } catch (error) {
         console.error("Failed to fetch initial notifications:", error);
         addToast({
-          // type: "error",
           title: "Could not load notifications",
         });
       }
@@ -59,30 +58,24 @@ const NotificationBell = () => {
   // Set up socket listener for real-time updates
   useEffect(() => {
     if (!socket) return;
-
-    const handleNewOrderNotification = (data: Notification) => {
-      console.log("Real-time notification received:", data); // Helpful for debugging
-
-      // Play sound for the new notification
-      notificationSound?.play().catch(console.error);
-
-      // Add the new notification to the top of the list
-      setNotifications((prev) => [data, ...prev]);
-
-      // Show a toast to alert the admin
-      addToast({
-        title: data.title || "New Notification",
-        description: data.message,
-      });
-    };
+    // const handleNewOrderNotification = (data: Notification) => {
+    //   console.log("Received notification:", data);
+    //   notificationSound?.play().catch(() => {});
+    //   setNotifications((prev) => [data, ...prev]);
+    //   addToast({
+    //     title: data.title || "New Notification",
+    //     description: data.message,
+    //   });
+    // };
 
     // This event name MUST match the one being emitted from your server.ts
-    const adminEvent = "new_order_notification";
-    socket.on(adminEvent, handleNewOrderNotification);
+    // const adminEvent = "new_order_notification";
+    // socket.on(adminEvent, handleNewOrderNotification);
+    // socket.emit("join_room", "admin_room");
 
     // Clean up the listener when the component unmounts to prevent memory leaks
     return () => {
-      socket.off(adminEvent, handleNewOrderNotification);
+      // socket.off(adminEvent, handleNewOrderNotification);
     };
   }, [socket, notificationSound]);
 
@@ -121,11 +114,11 @@ const NotificationBell = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        className="relative p-0 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
       >
         <Bell className="h-6 w-6 text-gray-600" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 block h-5 w-5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center animate-pulse">
+          <span className="absolute top-0 right-0  h-5 w-5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-blue-500 text-white text-xs font-bold flex items-center justify-center animate-bounce">
             {unreadCount}
           </span>
         )}
@@ -145,7 +138,7 @@ const NotificationBell = () => {
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
                   className={`flex items-start p-3 gap-3 cursor-pointer hover:bg-gray-50 ${
-                    !notification.isRead ? "bg-primary-50" : ""
+                    !notification.isRead ? "bg-blue-50" : ""
                   }`}
                 >
                   <div className="flex-shrink-0">

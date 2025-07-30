@@ -24,16 +24,14 @@ const Events = {
 
 // --- Helper Functions for Socket Logic ---
 
-
-
 async function handleUserConnection(socket: Socket) {
   if (!socket.data.id) return;
   try {
     const user = await prisma.user.findUnique({
-      where: { id: socket.data.id },
+      where: { id: socket.data.id, role: "admin" },
     });
 
-    // --- FIX: Join the admin room if the user is an admin ---
+    // --- Join the admin room if the user is an admin ---
     if (user && user.role === "admin") {
       socket.join("admin_room");
       console.log(`Admin user ${user.id} joined 'admin_room'`);
@@ -59,6 +57,10 @@ async function handleTableRegistration(
     console.log(
       `Socket ${socket.id} registered for guest ${guestId} at table ${tableId}`
     );
+    // Join the table-specific room for real-time updates
+    socket.join(`table_${tableId}`);
+    socket.emit("join_room", `table_${tableId}`);
+    console.log(`Socket ${socket.id} joined room table_${tableId}`);
   } catch (error) {
     console.error(`Error during table socket registration:`, error);
     socket.emit(Events.GENERAL_ERROR, {
@@ -98,7 +100,7 @@ async function createCustomerOrder(socket: Socket, io: Server, orderData: any) {
         include: { table: true },
       });
 
-      // --- FIX: Create a single notification payload to broadcast ---
+      // --- Create a single notification payload to broadcast ---
       const admins = await tx.user.findMany({ where: { role: "admin" } });
       let notificationPayload = null;
       if (admins.length > 0) {
@@ -106,12 +108,13 @@ async function createCustomerOrder(socket: Socket, io: Server, orderData: any) {
           order.table?.name || "unknown"
         }.`;
 
-        // This is the object that will be sent to the client
         notificationPayload = {
-          id: order.id, // Use a unique ID for the key
+          id: order.id,
           title: "New Order Received",
           message: message,
           isRead: false,
+          orderCode: order.orderCode,
+          table: order.table ? { name: order.table.name } : null,
           createdAt: new Date().toISOString(),
           fromTable: order.table ? { name: order.table.name } : null,
         };
@@ -135,7 +138,7 @@ async function createCustomerOrder(socket: Socket, io: Server, orderData: any) {
     // Let the customer know their order was created successfully
     socket.emit(Events.ORDER_CREATED_SUCCESS, result.order);
 
-    // --- FIX: Broadcast the notification to the 'admin_room' ---
+    // Broadcast the notification to the 'admin_room'
     if (result.notificationPayload) {
       io.to("admin_room").emit(
         Events.NEW_ORDER_NOTIFICATION,
@@ -169,13 +172,18 @@ async function handleOrderConfirmation(
       throw new Error("Permission denied. Admin role required.");
     }
 
-    const updatedOrder = await prisma.$transaction(async (tx) => {
+    // --- Transaction: update order and create notification ---
+    const result = await prisma.$transaction(async (tx) => {
       const order = await tx.order.update({
         where: { id: orderId },
         data: { status: "confirmed" },
         include: { table: true },
       });
+
+      let notificationPayload = null;
+
       if (order.tableId) {
+        // Create notification in DB
         await tx.notification.create({
           data: {
             title: "Order Confirmed",
@@ -187,21 +195,49 @@ async function handleOrderConfirmation(
             toTableId: order.tableId,
           },
         });
+
+        // Prepare notification payload for socket (for admin, optional)
+        notificationPayload = {
+          id: order.id,
+          title: "Order Confirmed",
+          message: `Your order #${order.orderCode.slice(
+            -5
+          )} has been confirmed.`,
+          isRead: false,
+          orderCode: order.orderCode,
+          table: order.table ? { name: order.table.name } : null,
+          createdAt: new Date().toISOString(),
+          fromTable: order.table ? { name: order.table.name } : null,
+        };
       }
-      return order;
+
+      return { order, notificationPayload };
     });
 
-    if (updatedOrder.tableId) {
-      const activeSockets = await prisma.tableSocket.findMany({
-        where: { tableId: updatedOrder.tableId },
+    // --- Broadcast to all sockets for this table (customer) ---
+    if (result.order.tableId) {
+      io.to(`table_${result.order.tableId}`).emit(Events.ORDER_STATUS_UPDATE, {
+        ...result.order,
+        status: "confirmed",
       });
-      for (const s of activeSockets) {
-        io.to(s.socketId).emit(Events.ORDER_STATUS_UPDATE, updatedOrder);
-      }
       console.log(
-        `Sent 'order_status_update' to ${activeSockets.length} sockets for table ${updatedOrder.tableId}`
+        `Broadcasted order confirmation to table_${result.order.tableId}`
       );
     }
+
+    // Optionally: broadcast notification to admin_room if needed
+    // (Uncomment if you want admins to see a notification when confirming)
+    // if (result.notificationPayload) {
+    //   io.to("admin_room").emit(
+    //     Events.NEW_ORDER_NOTIFICATION,
+    //     result.notificationPayload
+    //   );
+    //   console.log(
+    //     "Broadcasted order confirmation notification to 'admin_room'"
+    //   );
+    // }
+
+    return result;
   } catch (error: any) {
     console.error("Error confirming order:", error);
     socket.emit(Events.ORDER_ERROR, {

@@ -1,7 +1,8 @@
+"use client";
 import React from "react";
-
+import Home from "./home/page";
 function Page() {
-  return <div>this is a customer page</div>;
+  return <Home />;
 }
 
 export default Page;

@@ -45,6 +45,11 @@ export function SocketProvider({
 
   useEffect(() => {
     if (!socket) return;
+    // joint the table room
+    if (tableId) {
+      socket.emit("join_room", `table_${tableId}`);
+      console.log(`Socket ${socket.id} joined room table_${tableId}`);
+    }
 
     // --- Define all event handlers ---
     const onConnect = () => {
@@ -65,53 +70,74 @@ export function SocketProvider({
 
     // Handler for new order notifications (for Admin)
     const onNewOrderNotification = (order: any) => {
-      const audio = new Audio("/sounds/notification.mp3");
-      audio
-        .play()
-        .catch((error) => console.error("Audio playback failed:", error));
-      toast.success(
-        `New Order #${order.orderCode?.slice(-5)} from Table ${
-          order.table?.name
-        }`,
-        { duration: 8000, position: "top-right", icon: "🔔" }
-      );
+      console.log("New order notification received:", order);
+      if (userId) {
+        // Only for admin
+        const audio = new Audio("/sound/notice.wav");
+        audio.play().catch(() => {});
+        toast.success(
+          `New Order #${order.orderCode?.slice(-5)} from Table ${
+            order.table?.name
+          }`,
+          { duration: 8000, position: "top-center", icon: "🔔" }
+        );
+      }
     };
 
     // Handler for order status updates (for Customer)
+    // const onOrderStatusUpdate = (order: any) => {
+    //   console.log("Order status update received:", order);
+    //   if (order.status === "confirmed") {
+    //     const audio = new Audio("/sound/notice.wav");
+    //     audio
+    //       .play()
+    //       .catch((error) => console.error("Audio playback failed:", error));
+    //     toast.success(
+    //       `Your order fuad and mahi #${order.orderCode.slice(
+    //         -5
+    //       )} has been confirmed.`,
+    //       { duration: 8000, position: "top-center", icon: "✅" }
+    //     );
+    //   }
+    // You can add more status checks (e.g., rejected) if needed
+    // };
+    // --- Customer: Order Status Update ---
     const onOrderStatusUpdate = (order: any) => {
-      if (order.status === "confirmed") {
-        addToast({
-          title: "Order Confirmed!",
-          description: `Your order #${order.orderCode.slice(
-            -5
-          )} has been confirmed.`,
-          //   type: "success",
-        });
+      console.log("Order status update received:", order);
+      if (tableId && order.status === "confirmed") {
+        // Only for customer
+        const audio = new Audio("/sound/notice.wav");
+        audio.play().catch(() => {});
+        toast.success(
+          `Your order #${order.orderCode.slice(-5)} has been confirmed.`,
+          { duration: 8000, position: "top-center", icon: "✅" }
+        );
       }
     };
 
     // --- Attach event listeners ---
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
-    socket.on("new_order_notification", onNewOrderNotification);
-    socket.on("order_status_update", onOrderStatusUpdate);
+    // Attach only relevant listeners
+    if (userId) socket.on("new_order_notification", onNewOrderNotification);
+    if (tableId) socket.on("order_status_update", onOrderStatusUpdate);
 
     // --- Cleanup on unmount (when user logs out or closes tab) ---
     return () => {
       //   console.log("Cleaning up persistent socket connection.");
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
-      socket.off("new_order_notification", onNewOrderNotification);
-      socket.off("order_status_update", onOrderStatusUpdate);
+      if (userId) socket.off("new_order_notification", onNewOrderNotification);
+      if (tableId) socket.off("order_status_update", onOrderStatusUpdate);
       //   socket.off('all')
       socket.disconnect();
     };
-  }, [socket]);
+  }, [socket, tableId, userId]);
 
   return (
     <SocketContext.Provider value={{ socket }}>
       {/* Render both Toaster types to support both libraries */}
-      {/* <Toaster /> */}
+      <Toaster />
       {children}
     </SocketContext.Provider>
   );

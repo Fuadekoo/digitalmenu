@@ -23,7 +23,7 @@ type CustomerNotification = {
 
 const CustomerNotificationBell = () => {
   const { tid } = useParams();
-  const socket = useSocket();
+  const {socket,noti} = useSocket();
   const [notifications, setNotifications] = useState<CustomerNotification[]>(
     []
   );
@@ -32,7 +32,7 @@ const CustomerNotificationBell = () => {
 
   const notificationSound = useMemo(() => {
     if (typeof window !== "undefined") {
-      return new Audio("/sound/success.mp3"); // Customer-specific sound
+      return new Audio("/sound/notice.wav"); // Customer-specific sound
     }
     return null;
   }, []);
@@ -142,11 +142,11 @@ const CustomerNotificationBell = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        className="relative p-0 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
       >
         <Bell className="h-6 w-6 text-gray-600" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 block h-5 w-5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-blue-500 text-white text-xs font-bold flex items-center justify-center">
+          <span className="absolute top-0 right-0 h-5 w-5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-blue-500 text-white text-xs font-bold flex items-center justify-center">
             {unreadCount}
           </span>
         )}
