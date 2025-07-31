@@ -27,3 +27,17 @@ export async function markCustomerNotificationAsRead(notificationId: string) {
     console.error("Failed to mark notification as read:", error);
   }
 }
+
+export async function allMarkCustomerNotificationAsRead(
+  notificationId: string[]
+) {
+  try {
+    // use a transaction to mark all notifications as read
+    await prisma.notification.updateMany({
+      where: { id: { in: notificationId } },
+      data: { isRead: true },
+    });
+  } catch (error) {
+    console.error("Failed to mark all notifications as read:", error);
+  }
+}

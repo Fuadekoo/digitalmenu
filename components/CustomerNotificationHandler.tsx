@@ -8,11 +8,11 @@ import { formatDistanceToNow } from "date-fns";
 import {
   markCustomerNotificationAsRead,
   getCustomerNotifications,
+  allMarkCustomerNotificationAsRead,
 } from "@/actions/customer/notification";
 import useAction from "@/hooks/useActions";
 import { useParams } from "next/navigation";
 
-// Define a type for the customer-facing notification
 type CustomerNotification = {
   id: string;
   title: string;
@@ -21,93 +21,89 @@ type CustomerNotification = {
   createdAt: string;
 };
 
-const CustomerNotificationBell = () => {
-  const { tid } = useParams();
-  const {socket,noti} = useSocket();
-  const [notifications, setNotifications] = useState<CustomerNotification[]>(
-    []
-  );
+export default function CustomerNotificationBell() {
+  const params = useParams() as { lang: string; passcode: string; tid: string };
+  const tid = params?.tid;
+  const socket = useSocket();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const notificationSound = useMemo(() => {
-    if (typeof window !== "undefined") {
-      return new Audio("/sound/notice.wav"); // Customer-specific sound
+  // Actions
+  const [markResponse, markAction, markAsReadAction] = useAction(
+    markCustomerNotificationAsRead,
+    [, () => {}]
+  );
+  const [allMarkResponse, allMarkAction, allMarkAsReadAction] = useAction(
+    allMarkCustomerNotificationAsRead,
+    [, () => {}]
+  );
+  const [notificationResponse, refreshNotification, isLoadingNotification] =
+    useAction(getCustomerNotifications, [true, () => {}], tid);
+
+  // Memoize notifications array
+  const notifications: CustomerNotification[] = useMemo(
+    () =>
+      Array.isArray(notificationResponse)
+        ? notificationResponse.map((n: any) => ({
+            id: n.id,
+            title: n.title,
+            message: n.message,
+            isRead: n.isRead,
+            createdAt:
+              typeof n.createdAt === "string"
+                ? n.createdAt
+                : n.createdAt.toISOString(),
+          }))
+        : [],
+    [notificationResponse]
+  );
+
+  // Memoize unread count and unread IDs
+  const unreadNotifications = useMemo(
+    () => notifications.filter((n) => !n.isRead),
+    [notifications]
+  );
+  const unreadCount = unreadNotifications.length;
+  const unreadIds = useMemo(
+    () => unreadNotifications.map((n) => n.id),
+    [unreadNotifications]
+  );
+
+  // Refresh notifications when bell is clicked
+  const handleBellClick = async () => {
+    await refreshNotification();
+    setIsOpen((prev) => !prev);
+  };
+
+  // "Mark all as read" handler
+  const handleMarkAllAsRead = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (unreadIds.length > 0) {
+      await allMarkAction(unreadIds);
+      await refreshNotification();
     }
-    return null;
-  }, []);
+  };
 
-  // Action to mark notifications as read
-  const [, markAsReadAction] = useAction(markCustomerNotificationAsRead, [
-    ,
-    () => {},
-  ]);
-
-  // Fetch initial notifications for the customer on component mount
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        if (typeof tid === "string") {
-          // You will need to create this server action
-          const initialNotifications = await getCustomerNotifications(tid);
-          setNotifications(
-            (initialNotifications as any[]).map((n) => ({
-              id: n.id,
-              title: n.title,
-              message: n.message,
-              isRead: n.isRead,
-              createdAt:
-                typeof n.createdAt === "string"
-                  ? n.createdAt
-                  : n.createdAt.toISOString(),
-            }))
-          );
-          // console.log("Initial notifications fetched:", initialNotifications);
-        } else {
-          console.warn("No valid tableId found for fetching notifications.");
-        }
-      } catch (error) {
-        console.error("Failed to fetch customer notifications:", error);
-      }
-    };
-    fetchNotifications();
-  }, [tid]);
-
-  // Set up socket listener for real-time order status updates
+  // Listen for real-time order status updates and refresh notifications
   useEffect(() => {
     if (!socket) return;
 
-    const handleOrderStatusUpdate = (order: any) => {
-      notificationSound?.play().catch(console.error);
-
-      const newNotification: CustomerNotification = {
-        id: order.id, // Use order ID as a unique key
+    const handleSocketNotification = (order: any) => {
+      addToast({
         title: "Order Update!",
-        message: `Your order #${order.orderCode
+        description: `Your order #${order.orderCode
           .slice(-5)
           .toUpperCase()} has been ${order.status}.`,
-        isRead: false,
-        createdAt: new Date().toISOString(),
-      };
-
-      // Add the new notification to the top of the list
-      setNotifications((prev) => [newNotification, ...prev]);
-
-      // Show a toast to alert the customer
-      addToast({
-        // type: "success",
-        title: newNotification.title,
-        description: newNotification.message,
       });
+      refreshNotification();
     };
 
-    const customerEvent = "order_status_update";
-    socket.on(customerEvent, handleOrderStatusUpdate);
+    socket.on("order_status_update", handleSocketNotification);
 
     return () => {
-      socket.off(customerEvent, handleOrderStatusUpdate);
+      socket.off("order_status_update", handleSocketNotification);
     };
-  }, [socket, notificationSound]);
+  }, [socket, refreshNotification]);
 
   // Handle clicking outside the dropdown to close it
   useEffect(() => {
@@ -127,21 +123,15 @@ const CustomerNotificationBell = () => {
 
   const handleNotificationClick = (notification: CustomerNotification) => {
     if (!notification.isRead) {
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
-      );
-      // You will need to create this server action
-      markAsReadAction(notification.id);
+      markAction(notification.id); // Use markAction for a single notification
+      refreshNotification(); // Refresh the list after marking as read
     }
-    setIsOpen(false);
   };
-
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleBellClick}
         className="relative p-0 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
       >
         <Bell className="h-6 w-6 text-gray-600" />
@@ -154,10 +144,18 @@ const CustomerNotificationBell = () => {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-          <div className="p-3 border-b border-gray-200">
+          <div className="p-3 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-800">
               Order Updates
             </h3>
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllAsRead}
+                className="text-xs text-blue-600 hover:underline focus:outline-none"
+              >
+                Mark all as read
+              </button>
+            )}
           </div>
           <div className="max-h-96 overflow-y-auto">
             {notifications.length > 0 ? (
@@ -201,6 +199,4 @@ const CustomerNotificationBell = () => {
       )}
     </div>
   );
-};
-
-export default CustomerNotificationBell;
+}

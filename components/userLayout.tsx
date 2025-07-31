@@ -177,7 +177,7 @@ function Header({
       <div className="flex justify-between items-center w-full">
         <h1>fuad</h1>
         <div className="flex items-center gap-2">
-          {/* {isManager ? <NotificationBell /> : <CustomerNotificationHandler />} */}
+          {isManager ? <NotificationBell /> : <CustomerNotificationHandler />}
         </div>
       </div>
     </header>
