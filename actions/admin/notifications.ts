@@ -48,8 +48,25 @@ export async function markNotificationAsRead(notificationId: string) {
       where: { id: notificationId },
       data: { isRead: true },
     });
-  } catch (error) {
-    console.error("Failed to mark notification as read:", error);
-    throw new Error("Failed to update notification status");
+    return { Message: "Notification marked as read" };
+  } catch {
+    return { Message: "Failed to mark notification as read" };
+  }
+}
+
+export async function markAllNotificationsAsRead(notificationId: string[]) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("User not authenticated");
+  }
+
+  try {
+    await prisma.notification.updateMany({
+      where: { id: { in: notificationId } },
+      data: { isRead: true },
+    });
+    return { Message: "All notifications marked as read" };
+  } catch {
+    return { Message: "Failed to update notifications status" };
   }
 }

@@ -6,18 +6,19 @@ import { useSocket } from "@/components/SocketProvider";
 import {
   getNotifications,
   markNotificationAsRead,
+  markAllNotificationsAsRead,
 } from "@/actions/admin/notifications";
 import useAction from "@/hooks/useActions";
 import { addToast } from "@heroui/toast";
 import { formatDistanceToNow } from "date-fns";
-import { SocketEvents } from "@/lib/socketEvents";
-// Define the type for a notification based on your Prisma schema
+import { Loader2 } from "lucide-react";
+
 type Notification = {
   id: string;
   title: string;
   message: string;
   isRead: boolean;
-  createdAt: string; // Comes as string from server
+  createdAt: string;
   fromTable: {
     name: string;
   } | null;
@@ -25,59 +26,78 @@ type Notification = {
 
 const NotificationBell = () => {
   const socket = useSocket();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Optional: notification sound
-  const notificationSound = useMemo(() => {
-    if (typeof window !== "undefined") {
-      return new Audio("/sound/notice.wav"); // Ensure this file exists in /public/sound
-    }
-    return null;
-  }, []);
-
+  // Actions
   const [, markAsReadAction] = useAction(markNotificationAsRead, [, () => {}]);
+  const [, markAllAction] = useAction(markAllNotificationsAsRead, [, () => {}]);
+  const [notificationResponse, refreshNotification, isLoadingNotification] =
+    useAction(getNotifications, [true, () => {}]);
 
-  // Fetch initial notifications on component mount
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const initialNotifications = await getNotifications();
-        setNotifications(initialNotifications as unknown as Notification[]);
-      } catch (error) {
-        console.error("Failed to fetch initial notifications:", error);
-        addToast({
-          title: "Could not load notifications",
-        });
-      }
-    };
-    fetchNotifications();
-  }, []);
+  // Memoize notifications array
+  const notifications: Notification[] = useMemo(
+    () =>
+      Array.isArray(notificationResponse)
+        ? notificationResponse.map((n: any) => ({
+            id: n.id,
+            title: n.title,
+            message: n.message,
+            isRead: n.isRead,
+            createdAt:
+              typeof n.createdAt === "string"
+                ? n.createdAt
+                : n.createdAt.toISOString(),
+            fromTable: n.fromTable || null,
+          }))
+        : [],
+    [notificationResponse]
+  );
 
-  // Set up socket listener for real-time updates
+  // Memoize unread notifications and IDs
+  const unreadNotifications = useMemo(
+    () => notifications.filter((n) => !n.isRead),
+    [notifications]
+  );
+  const unreadCount = unreadNotifications.length;
+  const unreadIds = useMemo(
+    () => unreadNotifications.map((n) => n.id),
+    [unreadNotifications]
+  );
+
+  // Refresh notifications when bell is clicked
+  const handleBellClick = async () => {
+    await refreshNotification();
+    setIsOpen((prev) => !prev);
+  };
+
+  // "Mark all as read" handler
+  const handleMarkAllAsRead = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (unreadIds.length > 0) {
+      await markAllAction(unreadIds);
+      await refreshNotification();
+    }
+  };
+
+  // Listen for real-time new order notifications (uncomment and adjust event name as needed)
   useEffect(() => {
     if (!socket) return;
-    // const handleNewOrderNotification = (data: Notification) => {
-    //   console.log("Received notification:", data);
-    //   notificationSound?.play().catch(() => {});
-    //   setNotifications((prev) => [data, ...prev]);
-    //   addToast({
-    //     title: data.title || "New Notification",
-    //     description: data.message,
-    //   });
-    // };
 
-    // This event name MUST match the one being emitted from your server.ts
-    // const adminEvent = "new_order_notification";
-    // socket.on(adminEvent, handleNewOrderNotification);
-    // socket.emit("join_room", "admin_room");
-
-    // Clean up the listener when the component unmounts to prevent memory leaks
-    return () => {
-      // socket.off(adminEvent, handleNewOrderNotification);
+    const handleNewOrderNotification = (data: Notification) => {
+      addToast({
+        title: data.title || "New Notification",
+        description: data.message,
+      });
+      refreshNotification();
     };
-  }, [socket, notificationSound]);
+
+    socket.on("new_order_notification", handleNewOrderNotification);
+
+    return () => {
+      socket.off("new_order_notification", handleNewOrderNotification);
+    };
+  }, [socket, refreshNotification]);
 
   // Handle clicking outside the dropdown to close it
   useEffect(() => {
@@ -97,28 +117,21 @@ const NotificationBell = () => {
 
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.isRead) {
-      // Optimistically update the UI for a faster user experience
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
-      );
-      // Call the server action to update the database
       markAsReadAction(notification.id);
+      refreshNotification();
     }
-    // Close the dropdown after clicking an item
-    setIsOpen(false);
+    // setIsOpen(false);
   };
-
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleBellClick}
         className="relative p-0 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
       >
         <Bell className="h-6 w-6 text-gray-600" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0  h-5 w-5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-blue-500 text-white text-xs font-bold flex items-center justify-center animate-bounce">
+          <span className="absolute top-0 right-0 h-5 w-5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-blue-500 text-white text-xs font-bold flex items-center justify-center animate-bounce">
             {unreadCount}
           </span>
         )}
@@ -126,10 +139,18 @@ const NotificationBell = () => {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 animate-in fade-in duration-150">
-          <div className="p-3 border-b border-gray-200">
+          <div className="p-3 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-800">
               Notifications
             </h3>
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllAsRead}
+                className="text-xs text-blue-600 hover:underline focus:outline-none"
+              >
+                Mark all as read
+              </button>
+            )}
           </div>
           <div className="max-h-96 overflow-y-auto">
             {notifications.length > 0 ? (
@@ -149,6 +170,9 @@ const NotificationBell = () => {
                     )}
                   </div>
                   <div className="flex-grow">
+                    <p className="text-sm font-semibold text-gray-800">
+                      {notification.title}
+                    </p>
                     <p className="text-sm text-gray-700">
                       {notification.message}
                     </p>
@@ -157,6 +181,11 @@ const NotificationBell = () => {
                         addSuffix: true,
                       })}
                     </p>
+                    {notification.fromTable?.name && (
+                      <p className="text-xs text-gray-400">
+                        Table: {notification.fromTable.name}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))
