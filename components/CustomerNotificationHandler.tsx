@@ -12,6 +12,7 @@ import {
 } from "@/actions/customer/notification";
 import useAction from "@/hooks/useActions";
 import { useParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 type CustomerNotification = {
   id: string;
@@ -158,7 +159,11 @@ export default function CustomerNotificationBell() {
             )}
           </div>
           <div className="max-h-96 overflow-y-auto">
-            {notifications.length > 0 ? (
+            {isLoadingNotification ? (
+              <div className="flex justify-center items-center h-40">
+                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+              </div>
+            ) : notifications.length > 0 ? (
               notifications.map((notification) => (
                 <div
                   key={notification.id}
