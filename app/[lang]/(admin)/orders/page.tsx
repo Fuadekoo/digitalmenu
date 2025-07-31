@@ -264,7 +264,7 @@ function Page() {
   ];
 
   return (
-    <div>
+    <div className="overflow-hidden ">
       <CustomTable
         columns={columns}
         rows={rows}
