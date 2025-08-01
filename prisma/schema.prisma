@@ -66,7 +66,6 @@ model table {
   tNumber               Int            @unique
   roomNumber            String?
   waiterId              String?
-  // socket                String?
   waiter                waiters?       @relation(fields: [waiterId], references: [id])
   isOccupied            Boolean        @default(false)
   createdAt             DateTime       @default(now())

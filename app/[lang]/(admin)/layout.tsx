@@ -25,7 +25,7 @@ const menu = [
   { label: "Tables", url: "tables", icon: <CreditCard size={18} /> },
   { label: "Waiters", url: "waiters", icon: <Package size={18} /> },
   { label: "Orders", url: "orders", icon: <ShoppingCart size={18} /> },
-  { label: "Notifications", url: "notification", icon: <Folder size={18} /> },
+  // { label: "Notifications", url: "notification", icon: <Folder size={18} /> },
   // { label: "Profile", url: "profile", icon: <User size={18} /> },
   { label: "Settings", url: "settings", icon: <Settings size={18} /> },
 ];

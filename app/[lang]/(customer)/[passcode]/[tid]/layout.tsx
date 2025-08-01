@@ -31,11 +31,6 @@ export default async function Layout({
       icon: <ShoppingBasket size={18} />,
     },
     {
-      label: "Notification",
-      url: `/${passcode}/${tid}/notification`,
-      icon: <CreditCard size={18} />,
-    },
-    {
       label: "About",
       url: `/${passcode}/${tid}/about`,
       icon: <User size={18} />,
