@@ -129,7 +129,7 @@ function Page() {
 
   // Otherwise, render the main home page.
   return (
-    <div className="w-full min-h-svh overflow-x-hidden bg-gray-50 pb-0">
+    <div className="w-dvw overflow- bg-gray-50 pb-2">
       <div className="relative mb-4">
         <Input
           type="text"
@@ -145,7 +145,7 @@ function Page() {
         />
       </div>
       {/* --- Promotions Carousel --- */}
-      <div className="relative overflow-hidden rounded-2xl shadow-lg mb-6 h-60">
+      <div className="relative overflow-hidden rounded-2xl bg-yellow-50 shadow-lg mb-6 h-60">
         {isLoadingPromotion ? (
           <SkeletonLoader className="w-full h-full" />
         ) : promotionData && promotionData.length > 0 ? (
