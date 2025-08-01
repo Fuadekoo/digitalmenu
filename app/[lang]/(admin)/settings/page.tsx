@@ -141,7 +141,7 @@ function SettingsPage() {
     {
       key: "index",
       label: "#",
-      renderCell: (_: any, idx: number) => (page - 1) * pageSize + idx + 1,
+      renderCell: (_: number, idx: number) => (page - 1) * pageSize + idx + 1,
     },
     { key: "title", label: "Title" },
     { key: "description", label: "Description" },

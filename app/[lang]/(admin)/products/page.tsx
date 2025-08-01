@@ -16,6 +16,7 @@ import { productSchema } from "@/lib/zodSchema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { RadioGroup, Radio } from "@heroui/react";
 import { Input } from "@heroui/input"; // Import Input component
 
 interface ProductItem {
@@ -74,7 +75,7 @@ function Page() {
     pageSize
   );
 
-  const [categoryData, refreshCategories, isLoadingCategories] = useAction(
+  const [categoryData, , isLoadingCategories] = useAction(
     getCategory,
     [true, () => {}]
   );
@@ -255,7 +256,7 @@ function Page() {
       key: "isAvailable",
       label: "Available",
       renderCell: (item) =>
-        item.isAvailable === "true" || item.isAvailable === true ? (
+        item.isAvailable ? (
           <span className="text-green-600 font-semibold">Yes</span>
         ) : (
           <span className="text-red-600 font-semibold">No</span>
@@ -265,7 +266,7 @@ function Page() {
       key: "isFeatured",
       label: "Featured",
       renderCell: (item) =>
-        item.isFeatured === "true" || item.isFeatured === true ? (
+        item.isFeatured ? (
           <span className="text-yellow-600 font-semibold">Yes</span>
         ) : (
           <span className="text-gray-400 font-semibold">No</span>
@@ -304,10 +305,8 @@ function Page() {
                 photo: item.photo,
                 price: Number(item.price),
                 quantity: Number(item.quantity),
-                isAvailable:
-                  item.isAvailable === "true" || item.isAvailable === true,
-                isFeatured:
-                  item.isFeatured === "true" || item.isFeatured === true,
+                isAvailable: String(item.isAvailable) === "true",
+                isFeatured: String(item.isFeatured) === "true",
                 categoryId: item.categoryId,
                 createdAt: item.createdAt,
               })
@@ -331,8 +330,8 @@ function Page() {
   ];
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-end">
+    <div className="overflow-hidden">
+      <div className="overflow-y-auto mb-4 flex items-center justify-end">
         <Button color="primary" onPress={handleAddProduct}>
           Add Product
         </Button>
@@ -351,8 +350,8 @@ function Page() {
       />
       {/* Custom Modal for Add/Edit Product */}
       {showModal && (
-        <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-center items-center p-4 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+        <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-center items-center p-4 z-50 overflow-hidden">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md h-auto overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">
               {editProduct ? "Edit Product" : "Add Product"}
             </h2>
@@ -443,19 +442,6 @@ function Page() {
                     {errors.discount.message}
                   </span>
                 )}
-
-                <Input
-                  placeholder="Price"
-                  type="number"
-                  step="0.01"
-                  {...register("price", { valueAsNumber: true })}
-                  disabled={isLoadingCreate || isLoadingUpdate}
-                />
-                {errors.price && (
-                  <span className="text-red-500 text-xs">
-                    {errors.price.message}
-                  </span>
-                )}
                 <Input
                   placeholder="Quantity"
                   type="number"
@@ -467,24 +453,29 @@ function Page() {
                     {errors.quantity.message}
                   </span>
                 )}
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      {...register("isAvailable")}
-                      disabled={isLoadingCreate || isLoadingUpdate}
-                    />
-                    <span>Available</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      {...register("isFeatured")}
-                      disabled={isLoadingCreate || isLoadingUpdate}
-                    />
-                    <span>Featured</span>
-                  </label>
-                </div>
+                <RadioGroup
+                  label="Select product status"
+                  orientation="horizontal"
+                  value={
+                    watch("isAvailable")
+                      ? "available"
+                      : watch("isFeatured")
+                      ? "featured"
+                      : ""
+                  }
+                  onValueChange={(val) => {
+                    setValue("isAvailable", val === "available", {
+                      shouldValidate: true,
+                    });
+                    setValue("isFeatured", val === "featured", {
+                      shouldValidate: true,
+                    });
+                  }}
+                  // disabled={isLoadingCreate || isLoadingUpdate}
+                >
+                  <Radio value="available">Available</Radio>
+                  <Radio value="featured">Featured</Radio>
+                </RadioGroup>
                 <select
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   {...register("categoryId")}

@@ -7,13 +7,13 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import { ShoppingBasket, BellRing, LogOutIcon, UserIcon } from "lucide-react";
+import { LogOutIcon, UserIcon } from "lucide-react";
 import { AlignLeft, ChevronLeft, ChevronRight, DoorOpen } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import useAction from "@/hooks/useActions";
+// import useAction from "@/hooks/useActions";
 import Image from "next/image";
-import { addToast } from "@heroui/toast";
+// import { addToast } from "@heroui/toast";
 import { logout } from "@/actions/common/authentication";
 import Link from "next/link";
 import NotificationBell from "./NotificationBell";
@@ -52,6 +52,7 @@ function Sidebar({
   sidebar,
   setSidebar,
   menu,
+  isManager,
 }: {
   sidebar: boolean;
   setSidebar: React.Dispatch<React.SetStateAction<boolean>>;
@@ -63,7 +64,7 @@ function Sidebar({
   isManager?: boolean;
 }) {
   const pathname = usePathname() ?? "",
-    [, lang, role, selected] = pathname.split("/");
+    [, lang, selected] = pathname.split("/");
 
   return (
     <aside
@@ -141,8 +142,7 @@ function Sidebar({
           })}
         </div>
         <div className="p-5 max-xl:lg:p-2 grid gap-2 overflow-hidden">
-          {/* {isManager && <SelectedTerm />} */}
-          {/* <User sidebar={sidebar} /> */}
+          {isManager && <User sidebar={sidebar} />}
         </div>
       </div>
       <div
@@ -154,7 +154,7 @@ function Sidebar({
 }
 
 function Header({
-  sidebar,
+  // sidebar,
   isManager,
   setSidebar,
 }: {
@@ -183,7 +183,6 @@ function Header({
     </header>
   );
 }
-
 function User({ sidebar }: { sidebar: boolean }) {
   const pathname = usePathname() ?? "",
     [, lang] = pathname.split("/");
@@ -191,19 +190,29 @@ function User({ sidebar }: { sidebar: boolean }) {
   return (
     <Dropdown className="overflow-hidden">
       <DropdownTrigger>
-        <UserIcon className="size-5" />
+        <div
+          className={cn(
+            "flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg transition-colors",
+            "bg-gradient-to-r from-purple-700 to-blue-600",
+            "border border-blue-400 hover:border-blue-600",
+            "hover:bg-gradient-to-r hover:from-purple-800 hover:to-blue-700"
+          )}
+        >
+          <UserIcon className="size-5 text-white" />
+          {sidebar && <span className="text-white font-medium">Account</span>}
+        </div>
       </DropdownTrigger>
       <DropdownMenu color="primary" variant="flat">
         <DropdownItem
           key={"signout"}
-          startContent={<LogOutIcon className="size-4" />}
-          color="danger"
+          startContent={<LogOutIcon className="size-4 text-red-600" />}
+          className="!text-red-600 font-semibold rounded-md border border-red-200 bg-red-50 hover:bg-red-100 transition-colors"
           onClick={async () => {
             await logout();
-            window.location.href = `/${lang}/login`;
+            window.location.href = `/${lang}/signin`;
           }}
         >
-          Sign Out
+          <span className="text-red-600">Sign Out</span>
         </DropdownItem>
       </DropdownMenu>
     </Dropdown>

@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo } from "react";
 import io, { Socket } from "socket.io-client";
 import toast, { Toaster } from "react-hot-toast";
-import { addToast } from "@heroui/toast";
+// import { addToast } from "@heroui/toast";
 
 export const SocketContext = createContext<{ socket: typeof Socket | null }>({
   socket: null,
@@ -69,7 +69,18 @@ export function SocketProvider({
     };
 
     // Handler for new order notifications (for Admin)
-    const onNewOrderNotification = (order: any) => {
+    interface TableInfo {
+      name?: string;
+      [key: string]: any;
+    }
+
+    interface OrderNotification {
+      orderCode?: string;
+      table?: TableInfo;
+      [key: string]: any;
+    }
+
+    const onNewOrderNotification = (order: OrderNotification) => {
       console.log("New order notification received:", order);
       if (userId) {
         // Only for admin

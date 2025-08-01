@@ -33,15 +33,19 @@ function MiniCart() {
   useEffect(() => {
     if (!socket || !successAudio) return;
 
-    const handleOrderSuccess = (order: any) => {
+    interface OrderSuccessPayload {
+      orderCode: string;
+      [key: string]: any;
+    }
+
+    const handleOrderSuccess = (order: OrderSuccessPayload) => {
       setIsLoading(false);
-      successAudio.play().catch((error) => {
+      successAudio?.play().catch((error: unknown) => {
         console.error("Audio playback failed:", error);
       });
       addToast({
         title: "Order Created",
         description: "Your order has been successfully created!",
-        // type: "success",
       });
       addOrderId(order.orderCode);
       clearCart();
@@ -52,7 +56,6 @@ function MiniCart() {
       addToast({
         title: "Order Error",
         description: error.message || "There was an error creating your order.",
-        // type: "error",
       });
     };
 

@@ -46,25 +46,22 @@ export default function CustomerNotificationBell() {
       }
     },
   ]);
-  const [, allMarkAction, ] = useAction(
-    allMarkCustomerNotificationAsRead,
-    [
-      ,
-      (response) => {
-        if (response) {
-          addToast({
-            title: "Notification",
-            description: response.message,
-          });
-        } else {
-          addToast({
-            title: "Notification",
-            description: "All notifications marked as read!",
-          });
-        }
-      },
-    ]
-  );
+  const [, allMarkAction] = useAction(allMarkCustomerNotificationAsRead, [
+    ,
+    (response) => {
+      if (response) {
+        addToast({
+          title: "Notification",
+          description: response.message,
+        });
+      } else {
+        addToast({
+          title: "Notification",
+          description: "All notifications marked as read!",
+        });
+      }
+    },
+  ]);
   const [notificationResponse, refreshNotification, isLoadingNotification] =
     useAction(getCustomerNotifications, [true, () => {}], tid);
 
@@ -72,7 +69,7 @@ export default function CustomerNotificationBell() {
   const notifications: CustomerNotification[] = useMemo(
     () =>
       Array.isArray(notificationResponse)
-        ? notificationResponse.map((n: any) => ({
+        ? notificationResponse.map((n) => ({
             id: n.id,
             title: n.title,
             message: n.message,
@@ -116,7 +113,12 @@ export default function CustomerNotificationBell() {
   useEffect(() => {
     if (!socket) return;
 
-    const handleSocketNotification = (order: any) => {
+    interface OrderStatusUpdate {
+      orderCode: string;
+      status: string;
+    }
+
+    const handleSocketNotification = (order: OrderStatusUpdate) => {
       addToast({
         title: "Order Update!",
         description: `Your order #${order.orderCode

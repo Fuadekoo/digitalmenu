@@ -44,7 +44,7 @@ function Page() {
   const { orderIds } = useCart(); // Get the list of order IDs from the cart store
   console.log("Order IDs from cart:", orderIds);
   // Pass the orderIds array to the useAction hook to fetch the data
-  const [orderdata, refresh, isLoadingOrder] = useAction(
+  const [orderdata, , isLoadingOrder] = useAction(
     gateOrderIds,
     [true, () => {}],
     orderIds
@@ -71,7 +71,7 @@ function Page() {
             No orders found
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            You haven't placed any orders yet.
+            You haven &apos;t placed any orders yet.
           </p>
         </div>
       )}

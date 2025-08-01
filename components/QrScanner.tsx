@@ -14,7 +14,7 @@ const QrScanner = () => {
   const guestId = useGuestSession();
   const router = useRouter();
 
-  const [scanResponse, scanAction, isLoadingScan] = useAction(scan, [
+  const [, scanAction, isLoadingScan] = useAction(scan, [
     ,
     (response) => {
       if (response && response.success) {
@@ -61,8 +61,10 @@ const QrScanner = () => {
       scanAction(guestId ?? "guest_hifi0sjv31753482126016", decodedText);
     };
 
-    const onScanFailure = (errorMessage: string, error: any) => {
+    const onScanFailure = () => {
       // Optional: Handle scan failure (like camera errors)
+      setErrorMessage("Failed to scan QR code. Please try again.");
+      setScanResult(null);
     };
 
     scanner.render(onScanSuccess, onScanFailure);

@@ -110,13 +110,13 @@ function CartItem({ item, onRemove, onUpdateQuantity }: CartItemProps) {
 function Page() {
   const [cartItems, setCartItems] = useState(sampleCartItems);
 
-  interface CartItemType {
-    id: number;
-    name: string;
-    price: number;
-    photo: string;
-    quantity: number;
-  }
+  // interface CartItemType {
+  //   id: number;
+  //   name: string;
+  //   price: number;
+  //   photo: string;
+  //   quantity: number;
+  // }
 
   // interface CartItemProps {
   //   item: CartItemType;
