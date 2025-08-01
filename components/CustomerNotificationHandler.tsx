@@ -30,13 +30,40 @@ export default function CustomerNotificationBell() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Actions
-  const [markResponse, markAction, markAsReadAction] = useAction(
-    markCustomerNotificationAsRead,
-    [, () => {}]
-  );
-  const [allMarkResponse, allMarkAction, allMarkAsReadAction] = useAction(
+  const [, markAction] = useAction(markCustomerNotificationAsRead, [
+    ,
+    (response) => {
+      if (response) {
+        addToast({
+          title: "Notification",
+          description: response.message,
+        });
+      } else {
+        addToast({
+          title: "Notification",
+          description: "Notification marked as read!",
+        });
+      }
+    },
+  ]);
+  const [, allMarkAction, ] = useAction(
     allMarkCustomerNotificationAsRead,
-    [, () => {}]
+    [
+      ,
+      (response) => {
+        if (response) {
+          addToast({
+            title: "Notification",
+            description: response.message,
+          });
+        } else {
+          addToast({
+            title: "Notification",
+            description: "All notifications marked as read!",
+          });
+        }
+      },
+    ]
   );
   const [notificationResponse, refreshNotification, isLoadingNotification] =
     useAction(getCustomerNotifications, [true, () => {}], tid);

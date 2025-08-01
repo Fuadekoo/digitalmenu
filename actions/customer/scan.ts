@@ -14,11 +14,13 @@ export async function scan(guestId: string, decodedText: string) {
   let scannedTableId: string;
   let passcode: string;
   let domain: string;
+  let lang: string;
   try {
     const url = new URL(decodedText);
     scannedTableId = url.pathname.split("/").pop() || "";
     passcode = url.pathname.split("/")[2] || "";
     domain = url.hostname;
+    lang = url.pathname.split("/")[1] || "en";
 
     // Check if the URL is valid and contains the expected structure
     if (domain !== "localhost") {
@@ -88,5 +90,6 @@ export async function scan(guestId: string, decodedText: string) {
   return {
     success: true,
     message: "Scan successful. Redirecting...",
+    redirectUrl: `/${lang}/${passcode}/${scannedTableId}/home`,
   };
 }

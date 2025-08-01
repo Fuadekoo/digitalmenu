@@ -66,10 +66,10 @@ function Page() {
     pageSize
   );
 
-  const [waiterData, refreshWaiters, isLoadingWaiters] = useAction(
-    getWaiterData,
-    [true, () => {}]
-  );
+  const [waiterData, , isLoadingWaiters] = useAction(getWaiterData, [
+    true,
+    () => {},
+  ]);
 
   const [, executeDeleteTable, isLoadingDelete] = useAction(deleteTable, [
     ,
@@ -141,19 +141,23 @@ function Page() {
 
     // Centered title
     doc.setFontSize(18);
-    doc.text(`Table QR Code`, doc.internal.pageSize.getWidth() / 2, 20, { align: "center" });
+    doc.text(`Table QR Code`, doc.internal.pageSize.getWidth() / 2, 20, {
+      align: "center",
+    });
 
     // Table info box
     doc.setFontSize(12);
     doc.setDrawColor(200, 200, 200);
     doc.setFillColor(245, 245, 245);
-    doc.roundedRect(20, 30, 170, 25, 5, 5, 'F');
+    doc.roundedRect(20, 30, 170, 25, 5, 5, "F");
     doc.text(`Name: ${table.name}`, 25, 40);
     doc.text(`Number: ${table.tNumber ?? "-"}`, 25, 50);
 
     // Waiter info
     if (table.waiterId && waiterData) {
-      const waiter = waiterData.find((w: WaiterItem) => w.id === table.waiterId);
+      const waiter = waiterData.find(
+        (w: WaiterItem) => w.id === table.waiterId
+      );
       if (waiter) {
         doc.text(`Waiter: ${waiter.name}`, 120, 40);
       }
@@ -162,7 +166,14 @@ function Page() {
     // QR code centered below info
     const qrSize = 80;
     const pageWidth = doc.internal.pageSize.getWidth();
-    doc.addImage(qrDataUrl, "PNG", (pageWidth - qrSize) / 2, 65, qrSize, qrSize);
+    doc.addImage(
+      qrDataUrl,
+      "PNG",
+      (pageWidth - qrSize) / 2,
+      65,
+      qrSize,
+      qrSize
+    );
 
     doc.save(`table-${table.tNumber || table.name}-qrcode.pdf`);
   };

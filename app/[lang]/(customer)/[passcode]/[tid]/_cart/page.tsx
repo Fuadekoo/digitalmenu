@@ -118,11 +118,11 @@ function Page() {
     quantity: number;
   }
 
-  interface CartItemProps {
-    item: CartItemType;
-    onRemove: (itemId: number) => void;
-    onUpdateQuantity: (itemId: number, newQuantity: number) => void;
-  }
+  // interface CartItemProps {
+  //   item: CartItemType;
+  //   onRemove: (itemId: number) => void;
+  //   onUpdateQuantity: (itemId: number, newQuantity: number) => void;
+  // }
 
   const handleRemoveItem = (itemId: number) => {
     setCartItems(cartItems.filter((item) => item.id !== itemId));

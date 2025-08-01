@@ -3,7 +3,7 @@
 // If you don't have a `pages` directory, you may need to create it.
 import { Server as ServerIO } from "socket.io";
 import { Server as NetServer } from "http";
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextApiRequest} from "next";
 import { NextApiResponseServerIO } from "@/types/socket";
 
 export const config = {
@@ -15,7 +15,7 @@ export const config = {
 export default async (req: NextApiRequest, res: NextApiResponseServerIO) => {
   if (!res.socket.server.io) {
     console.log("New Socket.io server...");
-    const httpServer: NetServer = res.socket.server as any;
+    const httpServer: NetServer = res.socket.server;
     const io = new ServerIO(httpServer, {
       path: "/api/socket/io",
       addTrailingSlash: false,

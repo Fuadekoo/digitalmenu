@@ -64,7 +64,7 @@ function ProductPerCategoryId({
   categoryId,
   onBack,
 }: ProductPerCategoryIdProps) {
-  const [productsData, refreshProducts, isLoadingProducts] = useAction(
+  const [productsData, , isLoadingProducts] = useAction(
     listProductByCategory,
     [true, () => {}],
     categoryId
@@ -85,7 +85,7 @@ function ProductPerCategoryId({
             </div>
           ))
         ) : productsData && productsData.length > 0 ? (
-          productsData.map((item: any) => (
+          productsData.map((item) => (
             <div
               key={item.id}
               className="bg-white rounded-xl shadow-md flex flex-col"

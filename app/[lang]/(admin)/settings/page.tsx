@@ -96,7 +96,7 @@ function SettingsPage() {
         const dataUrl = `data:${file.type};base64,${base64String}`;
         setValue("photo", dataUrl, { shouldValidate: true });
         setImagePreview(dataUrl);
-      } catch (error) {
+      } catch {
         addToast({
           title: "Image Error",
           description: "Could not process the file.",

@@ -38,7 +38,7 @@ interface Order {
 interface ColumnDef {
   key: string;
   label: string;
-  renderCell?: (item: Record<string, any>) => React.ReactNode;
+  renderCell?: (item: Record<string, string>) => React.ReactNode;
 }
 
 function Page() {

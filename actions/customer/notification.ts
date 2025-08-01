@@ -23,8 +23,9 @@ export async function markCustomerNotificationAsRead(notificationId: string) {
       where: { id: notificationId },
       data: { isRead: true },
     });
-  } catch (error) {
-    console.error("Failed to mark notification as read:", error);
+    return { message: "Notification marked as read!" };
+  } catch {
+    return { message: "Failed to mark notification as read." };
   }
 }
 
@@ -37,7 +38,8 @@ export async function allMarkCustomerNotificationAsRead(
       where: { id: { in: notificationId } },
       data: { isRead: true },
     });
-  } catch (error) {
-    console.error("Failed to mark all notifications as read:", error);
+    return { message: "All notifications marked as read!" };
+  } catch {
+    return { message: "Failed to mark all notifications as read." };
   }
 }

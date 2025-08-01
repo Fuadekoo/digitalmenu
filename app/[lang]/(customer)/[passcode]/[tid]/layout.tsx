@@ -2,9 +2,9 @@ import React from "react";
 import { customerAuth } from "@/actions/customer/clientauth";
 import UserLayout from "@/components/userLayout";
 import { redirect } from "next/navigation";
-import { Home, Package, CreditCard, User, ShoppingBasket } from "lucide-react";
-import LocationPopup from "@/components/LocationPopup";
-import Footer from "@/components/footer";
+import { Home, User, ShoppingBasket } from "lucide-react";
+// import LocationPopup from "@/components/LocationPopup";
+// import Footer from "@/components/footer";
 // import CustomerSocketHandler from "@/components/CustomerSocketHandler";
 import { SocketProvider } from "@/components/SocketProvider";
 import TableSocketRegistrar from "@/components/TableSocketRegistrar";
@@ -16,7 +16,7 @@ export default async function Layout({
   children: React.ReactNode;
   params: Promise<{ lang: string; passcode: string; tid: string }>;
 }) {
-  const { passcode, lang, tid } = await params;
+  const { passcode, tid } = await params;
 
   // Define menu inside the function to access params
   const menu = [

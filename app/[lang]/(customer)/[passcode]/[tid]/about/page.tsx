@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { Smartphone, Zap, CreditCard, BellRing, QrCode } from "lucide-react";
+import { Smartphone, Zap, CreditCard, BellRing } from "lucide-react";
 
 // --- Feature Item Component ---
 const FeatureItem = ({
@@ -71,7 +71,7 @@ function Page() {
         {/* --- Features Section --- */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-gray-800 text-center mb-8">
-            Why You'll Love It
+            Why You &apos;ll Love It
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             <FeatureItem
@@ -103,46 +103,50 @@ function Page() {
             </h3>
             <ol className="list-decimal list-inside text-gray-800 text-lg text-center space-y-3 mb-6 font-medium">
               <li>
-          <span className="font-bold">Scan the QR code</span> on your table using your smartphone camera.
+                <span className="font-bold">Scan the QR code</span> on your
+                table using your smartphone camera.
               </li>
               <li>
-          <span className="font-bold">Instantly access</span> our digital menu—no app download required!
+                <span className="font-bold">Instantly access</span> our digital
+                menu—no app download required!
               </li>
               <li>
-          <span className="font-bold">Browse, customize, and order</span> directly from your device.
+                <span className="font-bold">Browse, customize, and order</span>{" "}
+                directly from your device.
               </li>
               <li>
-          <span className="font-bold">Pay securely</span> and get real-time updates about your order.
+                <span className="font-bold">Pay securely</span> and get
+                real-time updates about your order.
               </li>
             </ol>
             <div className="flex flex-col md:flex-row items-center justify-center gap-10 mt-8">
               <div className="flex flex-col items-center">
-          <div className="border-4 border-primary-600 rounded-xl overflow-hidden shadow-lg">
-            <Image
-              src="/scan1.jpg"
-              alt="Scan QR code with phone"
-              width={220}
-              height={220}
-              className="object-cover"
-            />
-          </div>
-          <p className="text-lg font-bold text-primary-700 text-center mt-4">
-            Scan QR Code
-          </p>
+                <div className="border-4 border-primary-600 rounded-xl overflow-hidden shadow-lg">
+                  <Image
+                    src="/scan1.jpg"
+                    alt="Scan QR code with phone"
+                    width={220}
+                    height={220}
+                    className="object-cover"
+                  />
+                </div>
+                <p className="text-lg font-bold text-primary-700 text-center mt-4">
+                  Scan QR Code
+                </p>
               </div>
               <div className="flex flex-col items-center">
-          <div className="border-4 border-primary-600 rounded-xl overflow-hidden shadow-lg">
-            <Image
-              src="/scan2.jpg"
-              alt="Access menu on phone"
-              width={220}
-              height={220}
-              className="object-cover"
-            />
-          </div>
-          <p className="text-lg font-bold text-primary-700 text-center mt-4">
-            Browse &amp; Order
-          </p>
+                <div className="border-4 border-primary-600 rounded-xl overflow-hidden shadow-lg">
+                  <Image
+                    src="/scan2.jpg"
+                    alt="Access menu on phone"
+                    width={220}
+                    height={220}
+                    className="object-cover"
+                  />
+                </div>
+                <p className="text-lg font-bold text-primary-700 text-center mt-4">
+                  Browse &amp; Order
+                </p>
               </div>
             </div>
           </div>

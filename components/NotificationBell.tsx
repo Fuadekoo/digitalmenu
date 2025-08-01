@@ -39,7 +39,7 @@ const NotificationBell = () => {
   const notifications: Notification[] = useMemo(
     () =>
       Array.isArray(notificationResponse)
-        ? notificationResponse.map((n: any) => ({
+        ? notificationResponse.map((n) => ({
             id: n.id,
             title: n.title,
             message: n.message,

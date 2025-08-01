@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import useAction from "@/hooks/useActions";
 import {
   getProducts,
@@ -41,7 +41,7 @@ interface CategoryItem {
 interface ColumnDef {
   key: string;
   label: string;
-  renderCell?: (item: Record<string, any>) => React.ReactNode;
+  renderCell?: (item: Record<string, string>) => React.ReactNode;
 }
 
 function Page() {

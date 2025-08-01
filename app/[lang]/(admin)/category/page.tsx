@@ -41,7 +41,6 @@ function CategoryList() {
     register,
     reset,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<z.infer<typeof categorySchema>>({
     resolver: zodResolver(categorySchema),
@@ -180,7 +179,7 @@ function CategoryList() {
         const base64String = Buffer.from(fileBuffer).toString("base64");
         setValue("photo", base64String, { shouldValidate: true });
         setPhotoValue(`data:image/jpeg;base64,${base64String}`);
-      } catch (error) {
+      } catch {
         addToast({
           title: "Image Error",
           description: "Could not process the file.",
