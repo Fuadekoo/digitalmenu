@@ -136,6 +136,13 @@ function Page() {
 
     // Get QR code string for this table
     const qrCodeString = await getTableQRCode(table.id.toString());
+    if (typeof qrCodeString !== "string") {
+      addToast({
+        title: "Error",
+        description: qrCodeString?.message || "Failed to generate QR code.",
+      });
+      return;
+    }
     // Generate QR code image
     const qrDataUrl = await QRCode.toDataURL(qrCodeString);
 
@@ -316,7 +323,7 @@ function Page() {
       <CustomTable
         columns={columns}
         rows={rows}
-        totalRows={tableData?.pagination.totalRecords || 0}
+        totalRows={tableData?.pagination?.totalRecords || 0}
         page={page}
         pageSize={pageSize}
         onPageChange={setPage}

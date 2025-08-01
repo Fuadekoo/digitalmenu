@@ -230,7 +230,7 @@ function Page() {
       <CustomTable
         columns={columns}
         rows={rows}
-        totalRows={waiterData?.pagination.totalRecords || 0}
+        totalRows={waiterData?.pagination?.totalRecords || 0}
         page={page}
         pageSize={pageSize}
         onPageChange={setPage}

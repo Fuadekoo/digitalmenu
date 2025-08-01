@@ -71,12 +71,14 @@ export function SocketProvider({
     // Handler for new order notifications (for Admin)
     interface TableInfo {
       name?: string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       [key: string]: any;
     }
 
     interface OrderNotification {
       orderCode?: string;
       table?: TableInfo;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       [key: string]: any;
     }
 
@@ -113,6 +115,8 @@ export function SocketProvider({
     // You can add more status checks (e.g., rejected) if needed
     // };
     // --- Customer: Order Status Update ---
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onOrderStatusUpdate = (order: any) => {
       console.log("Order status update received:", order);
       if (tableId && order.status === "confirmed") {

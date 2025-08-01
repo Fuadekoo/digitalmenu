@@ -150,7 +150,7 @@ function Page() {
             <div className="text-center p-10 text-gray-500">
               <Bell size={40} className="mx-auto mb-4" />
               <h2 className="text-xl font-semibold">No Notifications</h2>
-              <p>You're all caught up!</p>
+              <p>You&apos;re all caught up!</p>
             </div>
           )}
         </div>

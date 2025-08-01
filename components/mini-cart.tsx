@@ -35,7 +35,7 @@ function MiniCart() {
 
     interface OrderSuccessPayload {
       orderCode: string;
-      [key: string]: any;
+      [key: string]: string | number | boolean | undefined;
     }
 
     const handleOrderSuccess = (order: OrderSuccessPayload) => {

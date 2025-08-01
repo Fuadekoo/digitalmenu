@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export default function LocationPopup() {
   const [showPopup, setShowPopup] = useState(true);
-  const [location, setLocation] = useState<GeolocationPosition | null>(null);
+  const [, setLocation] = useState<GeolocationPosition | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const requestLocation = () => {
