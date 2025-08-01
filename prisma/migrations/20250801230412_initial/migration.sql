@@ -4,6 +4,7 @@ CREATE TABLE `user` (
     `username` VARCHAR(191) NOT NULL,
     `phone` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
+    `socket` VARCHAR(191) NULL,
     `role` VARCHAR(191) NOT NULL DEFAULT 'unauthorized',
     `isActive` BOOLEAN NOT NULL DEFAULT true,
     `clientPassCode` VARCHAR(191) NULL,
@@ -36,7 +37,7 @@ CREATE TABLE `product` (
     `description` VARCHAR(191) NULL,
     `photo` VARCHAR(191) NOT NULL,
     `price` DOUBLE NOT NULL,
-    `discount` DOUBLE NULL DEFAULT 0,
+    `discount` DOUBLE NOT NULL DEFAULT 0,
     `quantity` INTEGER NOT NULL,
     `isAvailable` BOOLEAN NOT NULL DEFAULT true,
     `isFeatured` BOOLEAN NOT NULL DEFAULT false,
@@ -75,6 +76,21 @@ CREATE TABLE `table` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `TableSocket` (
+    `id` VARCHAR(191) NOT NULL,
+    `tableId` VARCHAR(191) NOT NULL,
+    `guestId` VARCHAR(191) NOT NULL,
+    `socketId` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `TableSocket_guestId_key`(`guestId`),
+    UNIQUE INDEX `TableSocket_socketId_key`(`socketId`),
+    INDEX `TableSocket_tableId_idx`(`tableId`),
+    INDEX `TableSocket_guestId_idx`(`guestId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `order` (
     `id` VARCHAR(191) NOT NULL,
     `orderCode` VARCHAR(191) NOT NULL,
@@ -83,6 +99,7 @@ CREATE TABLE `order` (
     `location` VARCHAR(191) NULL,
     `phone` VARCHAR(191) NULL,
     `clientName` VARCHAR(191) NULL,
+    `guestId` VARCHAR(191) NULL,
     `status` VARCHAR(191) NOT NULL DEFAULT 'pending',
     `createdBy` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -118,11 +135,43 @@ CREATE TABLE `feedBack` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `promotion` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NULL,
+    `description` VARCHAR(191) NULL,
+    `photo` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `notification` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `message` VARCHAR(191) NOT NULL,
+    `type` VARCHAR(191) NOT NULL,
+    `isRead` BOOLEAN NOT NULL DEFAULT false,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `fromUserId` VARCHAR(191) NULL,
+    `fromTableId` VARCHAR(191) NULL,
+    `toUserId` VARCHAR(191) NULL,
+    `toTableId` VARCHAR(191) NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `product` ADD CONSTRAINT `product_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `productCategory`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `table` ADD CONSTRAINT `table_waiterId_fkey` FOREIGN KEY (`waiterId`) REFERENCES `waiters`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `TableSocket` ADD CONSTRAINT `TableSocket_tableId_fkey` FOREIGN KEY (`tableId`) REFERENCES `table`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `order` ADD CONSTRAINT `order_tableId_fkey` FOREIGN KEY (`tableId`) REFERENCES `table`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -132,3 +181,15 @@ ALTER TABLE `orderItem` ADD CONSTRAINT `orderItem_orderId_fkey` FOREIGN KEY (`or
 
 -- AddForeignKey
 ALTER TABLE `orderItem` ADD CONSTRAINT `orderItem_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `product`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `notification` ADD CONSTRAINT `notification_fromUserId_fkey` FOREIGN KEY (`fromUserId`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `notification` ADD CONSTRAINT `notification_fromTableId_fkey` FOREIGN KEY (`fromTableId`) REFERENCES `table`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `notification` ADD CONSTRAINT `notification_toUserId_fkey` FOREIGN KEY (`toUserId`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `notification` ADD CONSTRAINT `notification_toTableId_fkey` FOREIGN KEY (`toTableId`) REFERENCES `table`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
