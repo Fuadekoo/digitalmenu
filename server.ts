@@ -276,7 +276,7 @@ async function handleDisconnect(socket: Socket) {
 
 // --- Main Server Setup ---
 process.loadEnvFile(".env");
-const hostname = process.env.HOST || "localhost",
+const hostname = process.env.HOSTNAME,
   port = parseInt(process.env.PORT || "3000", 10),
   dev = process.env.NODE_ENV !== "production",
   app = next({ dev, hostname, port, turbo: true });
