@@ -19,7 +19,14 @@ interface Order {
   id: string;
   table: {
     name: string;
-  };
+    id?: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    tNumber?: number;
+    roomNumber?: string | null;
+    waiterId?: string | null;
+    isOccupied?: boolean;
+  } | null;
   totalPrice: number;
   status: "pending" | "completed" | "cancelled";
   createdAt: string;
@@ -117,7 +124,21 @@ function Page() {
               </div>
               <div className="flex-shrink-0 w-full sm:w-auto">
                 <button
-                  onClick={() => setSelectedOrder(order)}
+                  onClick={() =>
+                    setSelectedOrder({
+                      ...order,
+                      createdAt:
+                        typeof order.createdAt === "string"
+                          ? order.createdAt
+                          : order.createdAt.toISOString(),
+                      status:
+                        order.status === "pending" ||
+                        order.status === "completed" ||
+                        order.status === "cancelled"
+                          ? order.status
+                          : "pending",
+                    })
+                  }
                   className="w-full sm:w-auto bg-primary-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
                 >
                   <FileText size={16} />

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   getPromotions,
   createPromotion,
@@ -22,6 +22,12 @@ type Promotion = z.infer<typeof promotionSchema> & {
   photo?: string;
 };
 
+type ColumnDef = {
+  key: string;
+  label: string;
+  renderCell?: (item: Record<string, string>) => React.ReactNode;
+};
+
 function SettingsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
@@ -37,7 +43,7 @@ function SettingsPage() {
     register,
     reset,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<z.infer<typeof promotionSchema>>({
     resolver: zodResolver(promotionSchema),
     mode: "onChange",
@@ -51,38 +57,74 @@ function SettingsPage() {
     pageSize
   );
 
-  const handleActionSuccess = (message: string) => {
-    addToast({ title: "Success", description: message });
-    setShowModal(false);
-    setEditPromotion(null);
-    setImagePreview(null);
-    reset();
-    refreshPromotions();
+  // Convert all row fields to string for CustomTable compatibility
+  const rows =
+    (promotionData?.data || []).map((item) => ({
+      ...item,
+      id: String(item.id),
+      title: item.title ?? "",
+      description: item.description ?? "",
+      photo: item.photo ?? "",
+      createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : "",
+      updatedAt: item.updatedAt
+        ? typeof item.updatedAt === "string"
+          ? item.updatedAt
+          : new Date(item.updatedAt).toISOString()
+        : "",
+    })) || [];
+
+  // --- Actions ---
+  const handleActionCompletion = (
+    response: unknown,
+    successMessage: string,
+    errorMessage: string
+  ) => {
+    if (response) {
+      addToast({ title: "Success", description: successMessage });
+      refreshPromotions();
+      setShowModal(false);
+      setEditPromotion(null);
+      setImagePreview(null);
+      reset();
+    } else {
+      addToast({
+        title: "Error",
+        description: errorMessage,
+      });
+    }
   };
 
   const [, executeDelete, isLoadingDelete] = useAction(deletePromotion, [
     ,
-    () => {},
+    (res) =>
+      handleActionCompletion(
+        res,
+        "Promotion deleted successfully.",
+        "Failed to delete promotion."
+      ),
   ]);
 
   const [, executeCreate, isLoadingCreate] = useAction(createPromotion, [
     ,
-    (response) => {
-      if (response) {
-        handleActionSuccess("Promotion created successfully");
-      } else {
-        addToast({
-          title: "Error",
-          description: "Failed to create promotion",
-        });
-      }
-    },
+    (res) =>
+      handleActionCompletion(
+        res,
+        "Promotion created successfully.",
+        "Failed to create promotion."
+      ),
   ]);
 
   const [, executeUpdate, isLoadingUpdate] = useAction(updatePromotion, [
     ,
-    () => {},
+    (res) =>
+      handleActionCompletion(
+        res,
+        "Promotion updated successfully.",
+        "Failed to update promotion."
+      ),
   ]);
+
+  // --- File/Image Handling ---
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -107,6 +149,74 @@ function SettingsPage() {
     }
   };
 
+  // --- Table Columns ---
+  const columns: ColumnDef[] = useMemo(
+    () => [
+      {
+        key: "autoId",
+        label: "#",
+        renderCell: (item) => {
+          const rowIndexOnPage = rows.findIndex((r) => r.id === item.id);
+          if (rowIndexOnPage !== -1) {
+            return (page - 1) * pageSize + rowIndexOnPage + 1;
+          }
+          return item.id;
+        },
+      },
+      { key: "title", label: "Title" },
+      { key: "description", label: "Description" },
+      {
+        key: "photo",
+        label: "Proof",
+        renderCell: (item) =>
+          item.photo ? (
+            <img
+              src={item.photo}
+              alt="Promotion"
+              className="h-12 w-12 object-cover rounded"
+            />
+          ) : (
+            <span className="text-gray-400">No image</span>
+          ),
+      },
+      {
+        key: "createdAt",
+        label: "Created At",
+        renderCell: (item) =>
+          item.createdAt
+            ? new Date(item.createdAt).toLocaleDateString()
+            : "N/A",
+      },
+      {
+        key: "actions",
+        label: "Actions",
+        renderCell: (item) => (
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              color="primary"
+              variant="flat"
+              onPress={() => openEditModal(item as Promotion)}
+            >
+              Edit
+            </Button>
+            <Button
+              size="sm"
+              color="danger"
+              variant="flat"
+              onPress={() => handleDelete(item.id)}
+              isLoading={isLoadingDelete}
+            >
+              Delete
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [rows, page, pageSize, isLoadingDelete]
+  );
+
+  // --- Table Actions ---
   const handleDelete = (id: string) => {
     if (window.confirm("Are you sure you want to delete this promotion?")) {
       executeDelete(id);
@@ -117,7 +227,7 @@ function SettingsPage() {
     setEditPromotion(item);
     setValue("title", item.title);
     setValue("description", item.description);
-    setValue("photo", item.photo); // Use 'photo' from DB for the form
+    setValue("photo", item.photo);
     setImagePreview(item.photo || null);
     setShowModal(true);
   };
@@ -137,48 +247,6 @@ function SettingsPage() {
     }
   };
 
-  const columns = [
-    {
-      key: "index",
-      label: "#",
-      renderCell: (_: number, idx: number) => (page - 1) * pageSize + idx + 1,
-    },
-    { key: "title", label: "Title" },
-    { key: "description", label: "Description" },
-    { key: "photo", label: "Proof" },
-    {
-      key: "createdAt",
-      label: "Created At",
-      renderCell: (item: Promotion) =>
-        item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "N/A",
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      renderCell: (item: Promotion) => (
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            color="primary"
-            variant="flat"
-            onPress={() => openEditModal(item)}
-          >
-            Edit
-          </Button>
-          <Button
-            size="sm"
-            color="danger"
-            variant="flat"
-            onPress={() => handleDelete(item.id)}
-            isLoading={isLoadingDelete}
-          >
-            Delete
-          </Button>
-        </div>
-      ),
-    },
-  ];
-
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">
@@ -191,8 +259,8 @@ function SettingsPage() {
       </div>
       <CustomTable
         columns={columns}
-        rows={promotionData?.data || []}
-        totalRows={promotionData?.pagination.totalRecords || 0}
+        rows={rows}
+        totalRows={promotionData?.pagination?.totalRecords || 0}
         page={page}
         pageSize={pageSize}
         onPageChange={setPage}
@@ -200,11 +268,11 @@ function SettingsPage() {
         searchValue={search}
         onSearch={setSearch}
         isLoading={isLoadingPromotions}
-        rowKey="id"
+        // rowKey="id"
       />
 
       {showModal && (
-        <div className="fixed inset-0 backdrop-blur-sm bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
+        <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-center items-center p-4 z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
             <h2 className="text-xl font-semibold mb-4">
               {editPromotion ? "Edit Promotion" : "Add Promotion"}
@@ -215,6 +283,7 @@ function SettingsPage() {
                   {...register("title")}
                   className="w-full p-2 border border-gray-300 rounded-md"
                   placeholder="Promotion Title"
+                  disabled={isLoadingCreate || isLoadingUpdate || isSubmitting}
                 />
                 {errors.title && (
                   <p className="text-red-500 text-xs mt-1">
@@ -227,6 +296,7 @@ function SettingsPage() {
                   {...register("description")}
                   className="w-full p-2 border border-gray-300 rounded-md"
                   placeholder="Description"
+                  disabled={isLoadingCreate || isLoadingUpdate || isSubmitting}
                 />
                 {errors.description && (
                   <p className="text-red-500 text-xs mt-1">
@@ -243,7 +313,12 @@ function SettingsPage() {
                   accept="image/*"
                   onChange={handleFileChange}
                   className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                  disabled={isConvertingImage}
+                  disabled={
+                    isConvertingImage ||
+                    isLoadingCreate ||
+                    isLoadingUpdate ||
+                    isSubmitting
+                  }
                 />
                 {isConvertingImage && (
                   <div className="flex items-center text-xs text-gray-500 mt-1">
@@ -266,14 +341,19 @@ function SettingsPage() {
                   variant="ghost"
                   type="button"
                   onPress={() => setShowModal(false)}
+                  disabled={isLoadingCreate || isLoadingUpdate || isSubmitting}
                 >
                   Cancel
                 </Button>
                 <Button
                   color="primary"
                   type="submit"
-                  isLoading={isLoadingCreate || isLoadingUpdate}
+                  isLoading={isLoadingCreate || isLoadingUpdate || isSubmitting}
+                  disabled={isLoadingCreate || isLoadingUpdate || isSubmitting}
                 >
+                  {(isLoadingCreate || isLoadingUpdate || isSubmitting) && (
+                    <Loader2 className="h-5 w-5 animate-spin inline mr-2" />
+                  )}
                   {editPromotion ? "Update" : "Create"}
                 </Button>
               </div>
