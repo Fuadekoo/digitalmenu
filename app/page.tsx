@@ -1,11 +1,12 @@
+"use client";
 import React from "react";
-import Scan from "./[lang]/(guest)/scan/page";
-// import SignIn from "./[lang]/(guest)/signin/page";
-
+import Scan from "@/components/QrScanner";
+// import PushNotificationManager from "@/components/PushNotificationManager";
 function Page() {
   return (
     <div>
       <Scan />
+      {/* <PushNotificationManager /> */}
     </div>
   );
 }

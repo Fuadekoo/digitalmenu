@@ -165,3 +165,17 @@ model notification {
   toUser    user?  @relation("NotificationToUser", fields: [toUserId], references: [id])
   toTable   table? @relation("NotificationToTable", fields: [toTableId], references: [id])
 }
+
+model Subscription {
+  id         String   @id @default(uuid())
+  guestId    String // For guests
+  type       String   @default("guest") // guest or user
+  endpoint   String   @unique
+  keysAuth   String
+  keysP256dh String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+
+  @@index([guestId])
+}
