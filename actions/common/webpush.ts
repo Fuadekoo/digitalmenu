@@ -76,3 +76,12 @@ export async function sendNotification(message: string) {
     return { success: false, error: "Failed to send notification" };
   }
 }
+
+export async function deleteAllSubscription() {
+  try {
+    await prisma.subscription.deleteMany({});
+    return { success: true, mesage: "All subscriptions deleted" };
+  } catch {
+    return { success: false, error: "Failed to delete subscriptions" };
+  }
+}
