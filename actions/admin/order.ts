@@ -30,6 +30,7 @@ export async function getOrder(
         id: true,
         status: true,
         orderCode: true,
+        guestId: true,
         location: true,
         createdBy: true,
         totalPrice: true,

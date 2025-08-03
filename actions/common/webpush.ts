@@ -86,3 +86,39 @@ export async function sendNotification(message: string) {
 
   return { success: true, sent: successCount, failed: failCount };
 }
+
+
+export async function sendNotificationToGuest(
+  message: string,
+  guestId: string
+) {
+  const subscription = await prisma.subscription.findUnique({
+    where: { guestId },
+  });
+
+  if (!subscription) {
+    throw new Error("No subscription found for this guest");
+  }
+
+  try {
+    await webpush.sendNotification(
+      {
+        endpoint: subscription.endpoint,
+        keys: {
+          auth: subscription.keysAuth,
+          p256dh: subscription.keysP256dh,
+        },
+      },
+      JSON.stringify({
+        title: "Guest Notification",
+        body: message,
+        icon: "/logo.png",
+      })
+    );
+    console.log("Notification sent to guest", guestId);
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending notification to guest", guestId, error);
+    throw error;
+  }
+}

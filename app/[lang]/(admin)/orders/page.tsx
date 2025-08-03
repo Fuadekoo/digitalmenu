@@ -10,6 +10,7 @@ import {
   // approveOrder, // No longer needed
   rejectOrder,
 } from "@/actions/admin/order";
+import { sendNotificationToGuest } from "@/actions/common/webpush";
 import { useSocket } from "@/components/SocketProvider";
 import { Loader2 } from "lucide-react";
 
@@ -28,6 +29,7 @@ interface Order {
   id: string | number;
   key?: string | number;
   orderCode: string;
+  guestId?: string;
   tNumber?: string;
   roomNumber?: string;
   totalAmount: number;
@@ -105,7 +107,7 @@ function Page() {
   useEffect(() => {
     if (!socket) return;
 
-    const handleOrderConfirmedSuccess = (data: { orderId: string }) => {
+    const handleOrderConfirmedSuccess = async (data: { orderId: string }) => {
       addToast({
         title: "Success",
         description: "Order approved successfully.",
@@ -113,6 +115,15 @@ function Page() {
       refreshOrders();
       if (isApproving === data.orderId) {
         setIsApproving(null);
+      }
+
+      // Find the order to get guestId
+      const order = (orderData?.data || []).find((o) => o.id === data.orderId);
+      if (order?.guestId) {
+        await sendNotificationToGuest(
+          `Your order (${order.orderCode}) has been confirmed!`,
+          order.guestId
+        );
       }
     };
 
