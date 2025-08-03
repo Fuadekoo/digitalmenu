@@ -95,7 +95,7 @@ function Page() {
       if (response) {
         addToast({
           title: "Success",
-          description: "Table created.",
+          description: response?.message,
         });
         setShowModal(false);
         reset();
@@ -206,11 +206,16 @@ function Page() {
   };
 
   const onSubmit = async (data: z.infer<typeof tableSchema>) => {
-    const { name, tNumber, waiterId } = data;
+    const { name, tNumber, roomNumber, waiterId } = data;
     if (editTable) {
-      updateTableAction(editTable.id.toString(), { name, tNumber, waiterId });
+      updateTableAction(editTable.id.toString(), {
+        name,
+        tNumber,
+        roomNumber,
+        waiterId,
+      });
     } else {
-      tableAction({ name, tNumber, waiterId });
+      tableAction({ name, tNumber, roomNumber, waiterId });
     }
   };
 
@@ -246,6 +251,11 @@ function Page() {
       key: "tNumber",
       label: "Table Number",
       renderCell: (item) => item.tNumber,
+    },
+    {
+      key: "roomNumber",
+      label: "Room Number",
+      renderCell: (item) => item.roomNumber,
     },
     {
       key: "waiterId",
@@ -364,6 +374,12 @@ function Page() {
                     {errors.tNumber.message}
                   </span>
                 )}
+                <input
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Room Number (optional)"
+                  {...register("roomNumber")}
+                  disabled={isLoadingCreate || isLoadingUpdate}
+                />
                 <select
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   {...register("waiterId")}

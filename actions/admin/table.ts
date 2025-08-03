@@ -8,7 +8,7 @@ import { tableSchema } from "@/lib/zodSchema";
 
 export async function createTable(data: z.infer<typeof tableSchema>) {
   try {
-    const { name, tNumber, waiterId } = data;
+    const { name, tNumber, roomNumber, waiterId } = data;
 
     // Check if a table with the same name or number already exists
     const existingTable = await prisma.table.findFirst({
@@ -24,13 +24,15 @@ export async function createTable(data: z.infer<typeof tableSchema>) {
     }
 
     // Create the new table
-    return await prisma.table.create({
+    await prisma.table.create({
       data: {
         name,
         tNumber,
+        roomNumber,
         waiterId,
       },
     });
+    return { message: "Table created successfully." };
   } catch {
     return { message: "Failed to create table" };
   }
@@ -94,7 +96,7 @@ export async function updateTable(
   data: z.infer<typeof tableSchema>
 ) {
   try {
-    const { name, tNumber, waiterId } = data;
+    const { name, tNumber, roomNumber, waiterId } = data;
 
     // Check if a table with the same name or number already exists
     const existingTable = await prisma.table.findFirst({
@@ -102,7 +104,11 @@ export async function updateTable(
         AND: [
           { id: { not: id } }, // Exclude the current table
           {
-            OR: [{ name: name }, { tNumber: tNumber }],
+            OR: [
+              { name: name },
+              { tNumber: tNumber },
+              { roomNumber: roomNumber },
+            ],
           },
         ],
       },
@@ -121,6 +127,7 @@ export async function updateTable(
       data: {
         name,
         tNumber,
+        roomNumber,
         waiterId,
       },
     });

@@ -15,6 +15,7 @@ export type CategoryType = z.infer<typeof categorySchema>;
 export const tableSchema = z.object({
   name: z.string().min(1, "Table name is required"),
   tNumber: z.coerce.number().min(1, "Table number must be at least 1"),
+  roomNumber: z.string().optional(),
   waiterId: z.string().optional(), // Optional, can be null
 });
 export type TableType = z.infer<typeof tableSchema>;
