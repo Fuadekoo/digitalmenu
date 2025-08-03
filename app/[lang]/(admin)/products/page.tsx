@@ -75,10 +75,10 @@ function Page() {
     pageSize
   );
 
-  const [categoryData, , isLoadingCategories] = useAction(
-    getCategory,
-    [true, () => {}]
-  );
+  const [categoryData, , isLoadingCategories] = useAction(getCategory, [
+    true,
+    () => {},
+  ]);
 
   const [, executeDeleteProduct, isLoadingDelete] = useAction(deleteProduct, [
     ,
@@ -350,8 +350,8 @@ function Page() {
       />
       {/* Custom Modal for Add/Edit Product */}
       {showModal && (
-        <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-center items-center p-4 z-50 overflow-hidden">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md h-auto overflow-y-auto">
+        <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-center items-center p-4 z-50 overflow-">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md h-auto max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">
               {editProduct ? "Edit Product" : "Add Product"}
             </h2>

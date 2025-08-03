@@ -295,7 +295,7 @@ function CategoryList() {
       {/* Custom Modal for Add/Edit Category */}
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-sm  bg-opacity-50 flex justify-center items-center p-4 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md h-auto max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">
               {editCategory ? "Edit Category" : "Add Category"}
             </h2>
