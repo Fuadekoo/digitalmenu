@@ -18,6 +18,8 @@ import { logout } from "@/actions/common/authentication";
 import Link from "next/link";
 import NotificationBell from "./NotificationBell";
 import CustomerNotificationHandler from "./CustomerNotificationHandler";
+import AdminSocketConnected from "./adminSocketConnected";
+import ClientSocketConnected from "./clientSocketConnected";
 
 export default function UserLayout({
   children,
@@ -177,6 +179,7 @@ function Header({
       <div className="flex justify-between items-center w-full">
         <h1>fuad</h1>
         <div className="flex items-center gap-2">
+          {isManager ? <AdminSocketConnected /> : <ClientSocketConnected />}
           {isManager ? <NotificationBell /> : <CustomerNotificationHandler />}
         </div>
       </div>
