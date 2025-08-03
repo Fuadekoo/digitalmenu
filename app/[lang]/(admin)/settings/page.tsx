@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { promotionSchema } from "@/lib/zodSchema";
 import { Loader2 } from "lucide-react";
+import { sendNotificationToAll } from "@/actions/common/webpush";
 
 type Promotion = z.infer<typeof promotionSchema> & {
   id: string;
@@ -242,8 +243,10 @@ function SettingsPage() {
   const onSubmit = (data: z.infer<typeof promotionSchema>) => {
     if (editPromotion) {
       executeUpdate(editPromotion.id, data);
+      sendNotificationToAll("hello customer , a new promotion has been added!");
     } else {
       executeCreate(data);
+      sendNotificationToAll("hello customer , a new promotion has been added!");
     }
   };
 
