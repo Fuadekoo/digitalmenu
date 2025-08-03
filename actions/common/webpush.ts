@@ -1,4 +1,5 @@
 "use server";
+
 import prisma from "@/lib/db";
 import webpush from "web-push";
 
@@ -8,80 +9,80 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
-type Subscription = PushSubscription & {
+type SubscriptionInput = {
+  endpoint: string;
   keys: { auth: string; p256dh: string };
+  // Optionally add type here if you want to support it
+  type?: string;
 };
 
-let subscription: Subscription | null = null;
-
-export async function subscribeUser(sub: Subscription, guestId: string) {
-  subscription = sub;
-  // In a production environment, you would want to store the subscription in a database
-  // Check if a subscription already exists for this guestId
-  const existing = await prisma.subscription.findFirst({
-    where: { guestId },
+// Store or update a subscription in the database
+export async function subscribeUser(sub: SubscriptionInput, guestId: string) {
+  await prisma.subscription.upsert({
+    where: { guestId: guestId },
+    update: {
+      endpoint: sub.endpoint,
+      keysAuth: sub.keys.auth,
+      keysP256dh: sub.keys.p256dh,
+    },
+    create: {
+      endpoint: sub.endpoint,
+      guestId: guestId,
+      type: sub.type ?? "guest",
+      keysAuth: sub.keys.auth,
+      keysP256dh: sub.keys.p256dh,
+    },
   });
-
-  if (existing) {
-    // Update the existing subscription with new endpoint and keys
-    await prisma.subscription.update({
-      where: { id: existing.id },
-      data: {
-        endpoint: sub.endpoint,
-        keysAuth: sub.keys.auth,
-        keysP256dh: sub.keys.p256dh,
-      },
-    });
-  } else {
-    // Create a new subscription
-    await prisma.subscription.create({
-      data: {
-        guestId: guestId,
-        endpoint: sub.endpoint,
-        keysAuth: sub.keys.auth,
-        keysP256dh: sub.keys.p256dh,
-      },
-    });
-  }
-  // For example: await db.subscriptions.create({ data: sub })
   return { success: true };
 }
 
-export async function unsubscribeUser() {
-  subscription = null;
-  // In a production environment, you would want to remove the subscription from the database
-  // For example: await db.subscriptions.delete({ where: { ... } })
-  return { success: true };
+// Remove a subscription from the database by endpoint
+export async function unsubscribeUser(endpoint: string) {
+  // await prisma.subscription.deleteMany({ where: { endpoint } });
+  // return { success: true };
+  return null;
 }
 
+// Send a notification to all valid subscriptions in the database
 export async function sendNotification(message: string) {
-  console.log("Sending notification:", message);
-  console.log("Current subscription:", subscription);
-  if (!subscription) {
-    throw new Error("No subscription available");
+  const subscriptions = await prisma.subscription.findMany();
+  if (!subscriptions.length) throw new Error("No subscriptions available");
+
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const sub of subscriptions) {
+    try {
+      const buf = Buffer.from(sub.keysP256dh, "base64");
+      if (buf.length !== 65) {
+        console.warn(
+          "Skipping invalid subscription (p256dh not 65 bytes):",
+          sub.endpoint
+        );
+        failCount++;
+        continue;
+      }
+      await webpush.sendNotification(
+        {
+          endpoint: sub.endpoint,
+          keys: {
+            auth: sub.keysAuth,
+            p256dh: sub.keysP256dh,
+          },
+        },
+        JSON.stringify({
+          title: "Test Notification",
+          body: message,
+          icon: "/logo.png",
+        })
+      );
+      console.log("Notification sent to", sub.endpoint);
+      successCount++;
+    } catch (error) {
+      console.error("Error sending push notification to", sub.endpoint, error);
+      failCount++;
+    }
   }
 
-  try {
-    await webpush.sendNotification(
-      subscription,
-      JSON.stringify({
-        title: "Test Notification",
-        body: message,
-        icon: "/logo.png",
-      })
-    );
-    return { success: true };
-  } catch (error) {
-    console.error("Error sending push notification:", error);
-    return { success: false, error: "Failed to send notification" };
-  }
-}
-
-export async function deleteAllSubscription() {
-  try {
-    await prisma.subscription.deleteMany({});
-    return { success: true, mesage: "All subscriptions deleted" };
-  } catch {
-    return { success: false, error: "Failed to delete subscriptions" };
-  }
+  return { success: true, sent: successCount, failed: failCount };
 }

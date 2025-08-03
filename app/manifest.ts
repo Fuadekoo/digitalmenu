@@ -10,6 +10,9 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#ffffff",
     theme_color: "#000000",
+    protocol_handlers: [{ protocol: "web+menu", url: "/s%" }],
+    display_override: ["standalone", "window-controls-overlay"],
+    
     icons: [
       {
         src: "/logo.png",

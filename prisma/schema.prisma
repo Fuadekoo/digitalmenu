@@ -168,14 +168,13 @@ model notification {
 
 model Subscription {
   id         String   @id @default(uuid())
-  guestId    String // For guests
+  guestId    String   @unique
   type       String   @default("guest") // guest or user
-  endpoint   String   @unique
+  endpoint   String   @db.Text
   keysAuth   String
   keysP256dh String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
 
   @@index([guestId])
 }
