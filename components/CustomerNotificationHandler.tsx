@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Bell, CheckCircle } from "lucide-react";
+import { Bell, CheckCircle, Loader2 } from "lucide-react";
+// import { Button } from "@heroui/react";
+import { Alert, Button } from "@heroui/react";
+// import CustomAlert from "./CustomAlert"; // Adjust the path as needed
 import { useSocket } from "@/components/SocketProvider";
 import { addToast } from "@heroui/toast";
 import { formatDistanceToNow } from "date-fns";
@@ -12,7 +15,6 @@ import {
 } from "@/actions/customer/notification";
 import useAction from "@/hooks/useActions";
 import { useParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { subscribeUser } from "@/actions/common/webpush";
 import useGuestSession from "@/hooks/useGuestSession";
 
@@ -49,6 +51,9 @@ export default function CustomerNotificationBell() {
     null
   );
   const [loading, setLoading] = useState(false);
+
+  // Confirmation alert state
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // Actions
   const [, markAction] = useAction(markCustomerNotificationAsRead, [
@@ -155,20 +160,34 @@ export default function CustomerNotificationBell() {
         console.error("guestId is null. Cannot subscribe user.");
       }
     } catch (err) {
-      alert("Failed to subscribe for notifications.");
+      addToast({
+        title: "Subscription Failed",
+        description: "subscription are blocked goto setting and turn on.",
+      });
       console.error(err);
     }
     setLoading(false);
   }
 
-  // Refresh notifications when bell is clicked
+  // Modified bell click handler
   const handleBellClick = async () => {
     if (!subscription) {
-      await subscribeToPush();
+      setShowConfirm(true); // Show confirmation alert
       return;
     }
     await refreshNotification();
     setIsOpen((prev) => !prev);
+  };
+
+  // Handler for confirming subscription
+  const handleConfirmSubscribe = async () => {
+    setShowConfirm(false);
+    await subscribeToPush();
+  };
+
+  // Handler for cancel
+  const handleCancelSubscribe = () => {
+    setShowConfirm(false);
   };
 
   // "Mark all as read" handler
@@ -230,7 +249,15 @@ export default function CustomerNotificationBell() {
   };
 
   if (!isSupported) {
-    return <p>Push notifications are not supported in this browser.</p>;
+    return (
+      <div className="flex items-center justify-center h-12">
+        <Bell className="w-7 h-7 text-white" />
+        <span className="ml-2 text-red-600">
+          notifications are blocked{" "}
+          <span className="text-green-800">goto setting and turn on</span>
+        </span>
+      </div>
+    );
   }
 
   return (
@@ -255,6 +282,37 @@ export default function CustomerNotificationBell() {
         )}
       </button>
 
+      {/* Confirmation Alert */}
+      {showConfirm && (
+        <div className="absolute z-50 right-0 mt-2 w-80">
+          <Alert
+            color="primary"
+            title="Are you sure you want to subscribe?"
+            className="mb-2"
+          >
+            <div className="flex items-center gap-2 mt-3">
+              <Button
+                className="bg-background text-default-700 font-medium border-1 shadow-small"
+                size="sm"
+                variant="bordered"
+                onClick={handleConfirmSubscribe}
+              >
+                Subscribe
+              </Button>
+              <Button
+                className="text-default-500 font-medium underline underline-offset-4"
+                size="sm"
+                variant="light"
+                onClick={handleCancelSubscribe}
+              >
+                Cancel
+              </Button>
+            </div>
+          </Alert>
+        </div>
+      )}
+
+      {/* Notification Dropdown */}
       {subscription && isOpen && (
         <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
           <div className="p-3 border-b border-gray-200 flex items-center justify-between">
