@@ -7,7 +7,7 @@ import { addToast } from "@heroui/toast";
 import {
   getOrder,
   getOrderItems,
-  // approveOrder, // No longer needed
+  // rejectOrder, // No longer needed
   rejectOrder,
 } from "@/actions/admin/order";
 import { sendNotificationToGuest } from "@/actions/common/webpush";
@@ -90,6 +90,8 @@ function Page() {
               id: item.id,
               orderId: item.orderId,
               name: item.tName,
+              // tNumber: item.tNumber,
+              // roomNumber: item.roomNumber,
               productId: item.productId,
               quantity: item.quantity,
               photo: item.photo,
@@ -176,6 +178,8 @@ function Page() {
     ),
     key: order.id?.toString(),
     id: order.id?.toString(),
+    tNumber: order.table?.tNumber !== undefined && order.table?.tNumber !== null ? order.table.tNumber.toString() : "",
+    roomNumber: order.table?.roomNumber !== undefined && order.table?.roomNumber !== null ? order.table.roomNumber.toString() : "",
   }));
 
   const columns: ColumnDef[] = [
@@ -211,11 +215,6 @@ function Page() {
       renderCell: (item) => `${item.totalPrice}`,
     },
     {
-      key: "location",
-      label: "Location",
-      renderCell: (item) => item.location,
-    },
-    {
       key: "status",
       label: "Status",
       renderCell: (item) => item.status,
@@ -238,6 +237,8 @@ function Page() {
               handleViewOrderItems({
                 id: item.id,
                 orderCode: item.orderCode,
+                tNumber: item.tNumber,
+                roomNumber: item.roomNumber,
                 totalAmount: Number(item.totalPrice),
                 status: item.status,
                 createdAt: item.createdAt,

@@ -139,9 +139,13 @@ async function createCustomerOrder(socket: Socket, io: Server, orderData: any) {
       }
 
       // send push notification to admin
-      const push = await sendNotificationToAdmin("new order is created");
-      console.log("Push notification sent to admin:", push);
-
+      try {
+        await sendNotificationToAdmin("new order is created");
+        console.log("Push notification sent to admin");
+      } catch (err) {
+        console.error("Failed to send push notification to admin:", err);
+      }
+      // Return the order and notification payload
       return { order, notificationPayload };
     });
 
@@ -214,10 +218,15 @@ async function handleOrderConfirmation(
 
         // aend a push notification to guest by gate the gusetid
         if (clientId && clientId.guestId) {
-          await sendNotificationToGuest(
-            `Your order (${order.orderCode}) has been confirmed!`,
-            clientId.guestId
-          );
+          try {
+            await sendNotificationToGuest(
+              `Your order (${order.orderCode}) has been confirmed!`,
+              clientId.guestId
+            );
+            console.log("Push notification sent to guest");
+          } catch (err) {
+            console.error("Failed to send push notification to guest:", err);
+          }
         }
 
         // Prepare notification payload for socket (for admin, optional)
