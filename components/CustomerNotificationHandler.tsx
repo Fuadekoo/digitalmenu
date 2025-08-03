@@ -13,6 +13,19 @@ import {
 import useAction from "@/hooks/useActions";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { subscribeUser } from "@/actions/common/webpush";
+import useGuestSession from "@/hooks/useGuestSession";
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 type CustomerNotification = {
   id: string;
@@ -28,6 +41,14 @@ export default function CustomerNotificationBell() {
   const socket = useSocket();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Push notification subscription state
+  const guestId = useGuestSession();
+  const [isSupported, setIsSupported] = useState(false);
+  const [subscription, setSubscription] = useState<PushSubscription | null>(
+    null
+  );
+  const [loading, setLoading] = useState(false);
 
   // Actions
   const [, markAction] = useAction(markCustomerNotificationAsRead, [
@@ -94,8 +115,58 @@ export default function CustomerNotificationBell() {
     [unreadNotifications]
   );
 
+  // Push notification: check subscription
+  useEffect(() => {
+    if ("serviceWorker" in navigator && "PushManager" in window) {
+      setIsSupported(true);
+      checkSubscription();
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  async function checkSubscription() {
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (registration) {
+      const sub = await registration.pushManager.getSubscription();
+      setSubscription(sub);
+    }
+  }
+
+  async function subscribeToPush() {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const sub = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(
+          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+        ),
+      });
+      setSubscription(sub);
+      const serializedSub = JSON.parse(JSON.stringify(sub));
+      if (guestId) {
+        await subscribeUser(serializedSub, guestId);
+        addToast({
+          title: "Subscribed",
+          description: "You will now receive push notifications.",
+        });
+      } else {
+        console.error("guestId is null. Cannot subscribe user.");
+      }
+    } catch (err) {
+      alert("Failed to subscribe for notifications.");
+      console.error(err);
+    }
+    setLoading(false);
+  }
+
   // Refresh notifications when bell is clicked
   const handleBellClick = async () => {
+    if (!subscription) {
+      await subscribeToPush();
+      return;
+    }
     await refreshNotification();
     setIsOpen((prev) => !prev);
   };
@@ -158,21 +229,33 @@ export default function CustomerNotificationBell() {
     }
   };
 
+  if (!isSupported) {
+    return <p>Push notifications are not supported in this browser.</p>;
+  }
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={handleBellClick}
         className="relative p-0 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        title={
+          subscription
+            ? "Show notifications"
+            : loading
+            ? "Subscribing..."
+            : "Subscribe to push notifications"
+        }
+        disabled={loading}
       >
-        <Bell className="h-6 w-6 text-gray-600" />
-        {unreadCount > 0 && (
+        <span style={{ fontSize: "1.5rem" }}>{subscription ? "🔔" : "🔕"}</span>
+        {subscription && unreadCount > 0 && (
           <span className="absolute top-0 right-0 h-5 w-5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-blue-500 text-white text-xs font-bold flex items-center justify-center">
             {unreadCount}
           </span>
         )}
       </button>
 
-      {isOpen && (
+      {subscription && isOpen && (
         <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
           <div className="p-3 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-800">

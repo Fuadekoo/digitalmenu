@@ -32,7 +32,7 @@ export function SocketProvider({
     // Only connect if we have an identifier (userId or tableId)
     if (!userId && !tableId) return null;
 
-    return io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000", {
+    return io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000", {
       // Send authentication details if they exist
       auth: {
         id: userId,

@@ -6,6 +6,7 @@ import { Server, Socket } from "socket.io";
 import prisma from "./lib/db";
 import {
   sendNotificationToAdmin,
+  sendNotificationToGuest,
   // sendNotificationToGuest,
 } from "./actions/common/webpush";
 
@@ -174,6 +175,12 @@ async function handleOrderConfirmation(
       throw new Error("Order ID and User ID are required.");
     }
 
+    // gate the guestid from the order
+    const clientId = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { guestId: true },
+    });
+
     const adminUser = await prisma.user.findUnique({
       where: { id: adminUserId },
     });
@@ -204,6 +211,14 @@ async function handleOrderConfirmation(
             toTableId: order.tableId,
           },
         });
+
+        // aend a push notification to guest by gate the gusetid
+        if (clientId && clientId.guestId) {
+          await sendNotificationToGuest(
+            `Your order (${order.orderCode}) has been confirmed!`,
+            clientId.guestId
+          );
+        }
 
         // Prepare notification payload for socket (for admin, optional)
         notificationPayload = {

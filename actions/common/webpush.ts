@@ -188,3 +188,6 @@ export async function sendNotificationToAll(message: string) {
 
   return { success: true, sent: successCount, failed: failCount };
 }
+
+
+// check table has a socket in the database by using guestid 
