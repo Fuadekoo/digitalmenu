@@ -4,6 +4,10 @@ import cors from "cors";
 import next from "next";
 import { Server, Socket } from "socket.io";
 import prisma from "./lib/db";
+import {
+  sendNotificationToAdmin,
+  // sendNotificationToGuest,
+} from "./actions/common/webpush";
 
 // --- Constants for Socket Events ---
 const Events = {
@@ -132,6 +136,11 @@ async function createCustomerOrder(socket: Socket, io: Server, orderData: any) {
           });
         }
       }
+
+      // send push notification to admin
+      const push = await sendNotificationToAdmin("new order is created");
+      console.log("Push notification sent to admin:", push);
+
       return { order, notificationPayload };
     });
 
@@ -210,6 +219,9 @@ async function handleOrderConfirmation(
           fromTable: order.table ? { name: order.table.name } : null,
         };
       }
+
+      // const guestPush = await sendNotificationToGuest("Your order has been confirmed", order.guestId);
+      // console.log("Push notification sent to guest:", guestPush);
 
       return { order, notificationPayload };
     });

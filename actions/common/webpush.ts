@@ -87,7 +87,6 @@ export async function sendNotification(message: string) {
   return { success: true, sent: successCount, failed: failCount };
 }
 
-
 export async function sendNotificationToGuest(
   message: string,
   guestId: string
@@ -121,4 +120,71 @@ export async function sendNotificationToGuest(
     console.error("Error sending notification to guest", guestId, error);
     throw error;
   }
+}
+
+export async function sendNotificationToAdmin(message: string) {
+  const adminSubscription = await prisma.subscription.findFirst({
+    where: { type: "admin" },
+  });
+
+  if (!adminSubscription) {
+    throw new Error("No admin subscription found");
+  }
+
+  try {
+    await webpush.sendNotification(
+      {
+        endpoint: adminSubscription.endpoint,
+        keys: {
+          auth: adminSubscription.keysAuth,
+          p256dh: adminSubscription.keysP256dh,
+        },
+      },
+      JSON.stringify({
+        title: "Admin Notification",
+        body: message,
+        icon: "/logo.png",
+      })
+    );
+    console.log("Notification sent to admin");
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending notification to admin", error);
+    throw error;
+  }
+}
+export async function sendNotificationToAll(message: string) {
+  const subscriptions = await prisma.subscription.findMany();
+  if (!subscriptions.length) {
+    throw new Error("No subscriptions available");
+  }
+
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const sub of subscriptions) {
+    try {
+      await webpush.sendNotification(
+        {
+          endpoint: sub.endpoint,
+          keys: {
+            auth: sub.keysAuth,
+            p256dh: sub.keysP256dh,
+          },
+        },
+        JSON.stringify({
+          title: "General Notification",
+          body: message,
+          icon: "/logo.png",
+        })
+      );
+      console.log("Notification sent to", sub.endpoint);
+      successCount++;
+    } catch (error) {
+      console.error("Error sending notification to", sub.endpoint, error);
+      failCount++;
+    }
+  }
+
+  return { success: true, sent: successCount, failed: failCount };
 }
