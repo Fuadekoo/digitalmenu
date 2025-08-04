@@ -3,14 +3,25 @@ import React, { useEffect, useState } from "react";
 import Scan from "@/components/QrScanner";
 // import PushNotificationManager from "@/components/PushNotificationManager";
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 function InstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
-    const handler = (e: any) => {
+    const handler = (e: Event): void => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      const promptEvent = e as BeforeInstallPromptEvent;
+      setDeferredPrompt(promptEvent);
       setShowPrompt(true);
     };
     window.addEventListener("beforeinstallprompt", handler);
@@ -21,7 +32,7 @@ function InstallPrompt() {
   const handleInstallClick = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
+      // const { outcome } = await deferredPrompt.userChoice;
       // Optionally handle outcome === 'accepted' or 'dismissed'
       setShowPrompt(false);
       setDeferredPrompt(null);

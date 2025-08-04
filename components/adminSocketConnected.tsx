@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { RefreshCcw, CheckCheck } from "lucide-react";
 import { adminConnected } from "@/actions/common/socketChecker";
 import useAction from "@/hooks/useActions";

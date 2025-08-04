@@ -1,10 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import {
-  sendNotification,
-  subscribeUser,
-  unsubscribeUser,
-} from "@/actions/common/webpush";
+import { sendNotification, subscribeUser } from "@/actions/common/webpush";
 import useGuestSession from "@/hooks/useGuestSession";
 
 function urlBase64ToUint8Array(base64String: string) {

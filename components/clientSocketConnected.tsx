@@ -1,10 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { RefreshCcw, CheckCheck } from "lucide-react";
-import {
-  clientConnected,
-  adminConnected,
-} from "@/actions/common/socketChecker";
+import { clientConnected } from "@/actions/common/socketChecker";
 import useAction from "@/hooks/useActions";
 import { useParams } from "next/navigation";
 import useGuestSession from "@/hooks/useGuestSession";
