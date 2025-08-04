@@ -10,11 +10,13 @@ import { Input } from "@heroui/input";
 import { Button } from "@heroui/react";
 import Loading from "@/components/loading";
 import { addToast } from "@heroui/toast";
+import { useRouter } from "next/navigation";
 // import Link from "next/link";
 // import { auth } from "@/lib/auth";
 // import { redirect } from "next/navigation";
 
 function LoginPage() {
+  const router = useRouter();
   const {
     handleSubmit,
     register,
@@ -30,6 +32,7 @@ function LoginPage() {
           title: "Login",
           description: response.message,
         });
+        router.push("/en/dashboard");
       } else {
         addToast({
           title: "Login",
