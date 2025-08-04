@@ -32,7 +32,11 @@ export function SocketProvider({
     // Only connect if we have an identifier (userId or tableId)
     if (!userId && !tableId) return null;
 
-    return io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000", {
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    if (!socketUrl) {
+      throw new Error("NEXT_PUBLIC_SOCKET_URL environment variable is not set");
+    }
+    return io(socketUrl, {
       // Send authentication details if they exist
       auth: {
         id: userId,
