@@ -12,36 +12,18 @@ export async function authenticate(
   let result;
   try {
     result = await signIn("credentials", { ...data, redirect: false });
-  } catch (error) {
-    console.log("sign in failed", error);
+    if (result && result.error) {
+      // console.log("sign in failed", result.error);
+      return { message: `error: ${result.error}` };
+    }
+    return { message: "Login successful" };
+  } catch {
     return { message: "Invalid email or password" };
   }
-  if (result && result.error) {
-    console.log("sign in failed", result.error);
-    return { message: "Invalid email or password" };
-  }
-  console.log("sign in successfully");
-  // Fetch user role and isBlocked from DB
-  //   const user = await prisma.user.findUnique({
-  //     where: { phone: data.phone },
-  //     select: { role: true, isBlocked: true },
-  //   });
+  // console.log("sign in successfully");
 
-  // Deny login if user is blocked
-  //   if (user?.isBlocked) {
-  //     return { message: "Your account is blocked. Please contact support." };
-  //   }
-
-  // Redirect based on role
-  //   if (user?.role === "ADMIN") {
-  //     redirect("/en/admin/dashboard");
-  //   } else {
-  //     redirect("/en/customer/dashboard");
-  //   }
-
-  return { message: "Login successful" };
+  // return { message: "Login successful" };
 }
-
 
 export async function logout() {
   try {
@@ -84,4 +66,3 @@ export async function loginData() {
   }
   return user;
 }
-  
