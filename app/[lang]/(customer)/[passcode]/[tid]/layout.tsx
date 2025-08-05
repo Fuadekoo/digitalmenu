@@ -22,17 +22,17 @@ export default async function Layout({
   const menu = [
     {
       label: "Home",
-      url: `/${passcode}/${tid}/home`,
+      url: `${passcode}/${tid}/home`,
       icon: <Home size={18} />,
     },
     {
       label: "My Orders",
-      url: `/${passcode}/${tid}/myorders`,
+      url: `${passcode}/${tid}/myorders`,
       icon: <ShoppingBasket size={18} />,
     },
     {
       label: "About",
-      url: `/${passcode}/${tid}/about`,
+      url: `${passcode}/${tid}/about`,
       icon: <User size={18} />,
     },
   ];
