@@ -130,7 +130,7 @@ function Page() {
 
   // Otherwise, render the main home page.
   return (
-    <div className="w- bg-gray-50 p-2">
+    <div className="w-dvw bg-gray-50 p-2">
       <div className="relative mb-4">
         <Input
           type="text"
@@ -152,7 +152,7 @@ function Page() {
       {/* --- Promotions Carousel --- */}
       <div className="relative overflow-hidden rounded-2xl bg-yellow-50 shadow-lg mb-6 h-60">
         {isLoadingPromotion ? (
-          <SkeletonLoader className="w-full h-full" />
+          <SkeletonLoader className=" h-full" />
         ) : promotionData && promotionData.length > 0 ? (
           <>
             <div
@@ -160,15 +160,12 @@ function Page() {
               style={{ transform: `translateX(-${activeIndex * 100}%)` }}
             >
               {promotionData.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex-shrink-0 w-full h-full relative"
-                >
+                <div key={item.id} className="flex-shrink-0  h-full relative">
                   <Image
                     src={`/api/filedata/${item.photo}`}
                     alt={item.title ?? "Promotion"}
                     fill
-                    className="object-cover w-full h-full rounded-t-xl"
+                    className="object-cover  h-full rounded-t-xl"
                     style={{ objectFit: "cover" }}
                     loading="lazy"
                     sizes="(max-width: 768px) 100vw, 600px"
@@ -265,7 +262,7 @@ function Page() {
                     alt={item.name}
                     width={256}
                     height={128}
-                    className="w-full h-32 object-cover"
+                    className=" h-32 object-cover"
                     style={{ objectFit: "cover" }}
                     loading="lazy"
                   />
