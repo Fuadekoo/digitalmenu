@@ -6,7 +6,7 @@ import MiniCart from "@/components/mini-cart";
 import { ArrowLeft } from "lucide-react";
 import { useCart, CartItem } from "@/hooks/useCart";
 import { Minus, Plus, PlusCircle } from "lucide-react";
-
+import Image from "next/image";
 const SkeletonLoader = ({ className }: { className?: string }) => (
   <div className={`animate-pulse bg-gray-200 rounded-lg ${className}`} />
 );
@@ -90,10 +90,14 @@ function ProductPerCategoryId({
               key={item.id}
               className="bg-white rounded-xl shadow-md flex flex-col"
             >
-              <img
+              <Image
                 src={`/api/filedata/${item.photo}`}
                 alt={item.name}
+                width={400}
+                height={128}
                 className="w-full h-32 object-cover rounded-t-xl"
+                style={{ objectFit: "cover" }}
+                loading="lazy"
               />
               <div className="p-3 flex-grow flex flex-col justify-between">
                 <div>
@@ -112,10 +116,14 @@ function ProductPerCategoryId({
           <div className="col-span-full text-center text-red-500 py-10">
             No product found.
             <div className="flex justify-center mt-6">
-              <img
-                src="/soon.png"
+              <Image
+                src="/coming-soon.png"
                 alt="No products"
-                className="w-40  h-40 object-contain animate-bounce"
+                width={160}
+                height={160}
+                className="w-40 h-40 object-contain animate-bounce"
+                priority={false}
+                loading="lazy"
               />
             </div>
           </div>
