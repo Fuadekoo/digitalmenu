@@ -46,15 +46,13 @@ export default async function Layout({
   const isManager = false;
 
   return (
-    <div className="overflow-hidden h-dvh w-dvw">
-      <UserLayout menu={menu} isManager={isManager}>
-        {/* <LocationPopup /> */}
-        <SocketProvider tableId={tid}>
-          <TableSocketRegistrar />
-          {children}
-        </SocketProvider>
-        {/* <Footer /> */}
-      </UserLayout>
-    </div>
+    <UserLayout menu={menu} isManager={isManager}>
+      {/* <LocationPopup /> */}
+      <SocketProvider tableId={tid}>
+        <TableSocketRegistrar />
+        {children}
+      </SocketProvider>
+      {/* <Footer /> */}
+    </UserLayout>
   );
 }

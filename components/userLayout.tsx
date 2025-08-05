@@ -34,7 +34,7 @@ export default function UserLayout({
 }) {
   const [sidebar, setSidebar] = useState(false);
   return (
-    <div className="grid lg:grid-cols-[auto_1fr] overflow-hidden h-screen">
+    <div className="grid lg:grid-cols-[auto_1fr] overflow-hidden h-dvh ">
       <Sidebar {...{ sidebar, setSidebar, menu, isManager }} />
       <div className="grid grid-rows-[auto_1fr] gap-2 overflow-hidden">
         <Header
