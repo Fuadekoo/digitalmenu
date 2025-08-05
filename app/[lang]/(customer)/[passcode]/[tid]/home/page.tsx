@@ -130,7 +130,7 @@ function Page() {
 
   // Otherwise, render the main home page.
   return (
-    <div className="w-dvw bg-gray-50 p-2">
+    <div className="w- bg-gray-50 p-2">
       <div className="relative mb-4">
         <Input
           type="text"

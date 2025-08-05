@@ -34,7 +34,7 @@ export default function UserLayout({
 }) {
   const [sidebar, setSidebar] = useState(false);
   return (
-    <div className="grid lg:grid-cols-[auto_1fr] overflow-hidden h-dvh ">
+    <div className=" grid lg:grid-cols-[auto_1fr] overflow-hidden h-dvh w-dvw ">
       <Sidebar {...{ sidebar, setSidebar, menu, isManager }} />
       <div className="grid grid-rows-[auto_1fr] gap-2 overflow-hidden">
         <Header
@@ -42,9 +42,7 @@ export default function UserLayout({
           setSidebar={setSidebar}
           isManager={isManager}
         />
-        <div className="m-2 w-dvw rounded-xl overflow-y-auto grid">
-          {children}
-        </div>
+        <div className="m-0 rounded-xl overflow-y-auto grid">{children}</div>
       </div>
     </div>
   );
@@ -178,7 +176,7 @@ function Header({
   isManager?: boolean;
 }) {
   return (
-    <header className="z-30 h-12 p-2 flex gap-4 items-center max-lg:shadow-sm bg-white/100">
+    <header className="z-30 h-12 m-0 p-2 flex gap-4 items-center max-lg:shadow-sm bg-white/100">
       <Button
         isIconOnly
         variant="flat"
