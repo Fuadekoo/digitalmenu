@@ -343,7 +343,7 @@ app
           "http://194.238.16.146:5000",
           "http://localhost:5000",
         ],
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true,
       },
       pingTimeout: 60000,
