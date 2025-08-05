@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Bell, CheckCircle, Loader2 } from "lucide-react";
 // import { Button } from "@heroui/react";
+import { BellPlus } from "lucide-react";
 import { Alert, Button } from "@heroui/react";
 // import CustomAlert from "./CustomAlert"; // Adjust the path as needed
 import { useSocket } from "@/components/SocketProvider";
@@ -252,10 +253,16 @@ export default function CustomerNotificationBell() {
     return (
       <div className="flex items-center justify-center h-12">
         <Bell className="w-7 h-7 text-white" />
-        <span className="ml-2 text-red-600">
-          notifications are blocked{" "}
-          <span className="text-green-800">goto setting and turn on</span>
-        </span>
+        <button
+          className="ml-2 flex items-center gap-1 text-red-600 focus:outline-none"
+          onClick={async () => {
+            await refreshNotification();
+            setIsOpen((prev) => !prev);
+          }}
+          title="Show notifications"
+        >
+          <Bell className="w-5 h-5" />
+        </button>
       </div>
     );
   }
