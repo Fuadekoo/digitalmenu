@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Bell, CheckCircle, Loader2 } from "lucide-react";
+import { BellPlus, CheckCircle, Loader2 } from "lucide-react";
 // import { Button } from "@heroui/react";
-import { BellPlus } from "lucide-react";
+// import {  } from "lucide-react";
 import { Alert, Button } from "@heroui/react";
 // import CustomAlert from "./CustomAlert"; // Adjust the path as needed
 import { useSocket } from "@/components/SocketProvider";
@@ -252,7 +252,7 @@ export default function CustomerNotificationBell() {
   if (!isSupported) {
     return (
       <div className="flex items-center justify-center h-12">
-        <Bell className="w-7 h-7 text-white" />
+        <BellPlus className="w-7 h-7 text-white" />
         <button
           className="ml-2 flex items-center gap-1 text-red-600 focus:outline-none"
           onClick={async () => {
@@ -261,7 +261,7 @@ export default function CustomerNotificationBell() {
           }}
           title="Show notifications"
         >
-          <Bell className="w-5 h-5" />
+          <BellPlus className="w-5 h-5" />
         </button>
       </div>
     );
