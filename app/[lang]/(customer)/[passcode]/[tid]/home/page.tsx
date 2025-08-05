@@ -162,7 +162,8 @@ function Page() {
                   <img
                     src={`/api/filedata/${item.photo}`}
                     alt={item.title ?? "Promotion"}
-                    className="object-cover w-full h-full"
+                    className="object-cover w-full h-full rounded-t-xl"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black/30" />
                   <div className="absolute bottom-4 left-4 text-white">
@@ -225,6 +226,7 @@ function Page() {
                     }
                     alt={cat.cname}
                     className="w-20 h-20 object-cover rounded-full shadow-md"
+                    loading="lazy"
                   />
                   <span className="text-sm font-medium text-gray-700">
                     {cat.cname}
@@ -254,6 +256,7 @@ function Page() {
                     src={`/api/filedata/${item.photo}`}
                     alt={item.name}
                     className="w-full h-32 object-cover"
+                    loading="lazy"
                   />
                   <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                     {item.discount}% OFF
@@ -300,6 +303,7 @@ function Page() {
                   src={`/api/filedata/${item.photo}`}
                   alt={item.name}
                   className="w-full h-32 object-cover rounded-t-xl"
+                  loading="lazy"
                 />
                 <div className="p-3 flex-grow flex flex-col justify-between">
                   <div>
