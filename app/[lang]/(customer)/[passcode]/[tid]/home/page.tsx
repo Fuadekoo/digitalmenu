@@ -21,6 +21,7 @@ import Link from "next/link";
 import MiniCart from "@/components/mini-cart";
 import { useCart, CartItem } from "@/hooks/useCart";
 import ProductPerCategoryId from "@/components/productper-catagoryId";
+import Image from "next/image";
 
 // --- Reusable Components for Loading/Empty States ---
 
@@ -252,10 +253,13 @@ function Page() {
                   key={item.id}
                   className="relative flex-shrink-0 w-64 bg-white rounded-xl shadow-md overflow-hidden flex flex-col"
                 >
-                  <img
+                  <Image
                     src={`/api/filedata/${item.photo}`}
                     alt={item.name}
+                    width={256}
+                    height={128}
                     className="w-full h-32 object-cover"
+                    style={{ objectFit: "cover" }}
                     loading="lazy"
                   />
                   <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
