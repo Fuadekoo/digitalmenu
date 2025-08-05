@@ -1,9 +1,15 @@
 import React from "react";
+import { Pinwheel } from "ldrs/react";
+import "ldrs/react/Pinwheel.css";
 
-function Loading() {
+type LoadingProps = {
+  size?: number;
+};
+
+function Loading({ size = 35 }: LoadingProps) {
   return (
     <div className="flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      <Pinwheel size={size} stroke="3.5" speed="0.9" color="primary" />
     </div>
   );
 }
