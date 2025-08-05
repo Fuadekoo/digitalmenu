@@ -11,9 +11,7 @@ import { LogOutIcon, UserIcon } from "lucide-react";
 import { AlignLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-// import useAction from "@/hooks/useActions";
 import Image from "next/image";
-// import { addToast } from "@heroui/toast";
 import { logout } from "@/actions/common/authentication";
 import Link from "next/link";
 import NotificationBell from "./NotificationBell";
@@ -65,8 +63,13 @@ function Sidebar({
   }[];
   isManager?: boolean;
 }) {
-  const pathname = usePathname() ?? "",
-    [, lang, selected] = pathname.split("/");
+  const pathname = usePathname() ?? "";
+  const [, lang] = pathname.split("/");
+
+  // Auto-close sidebar on mobile after menu click
+  const handleMenuClick = () => {
+    if (window.innerWidth < 1024) setSidebar(false);
+  };
 
   return (
     <aside
@@ -77,7 +80,7 @@ function Sidebar({
     >
       <div
         className={cn(
-          "relative  bg-purple-950 grid grid-rows-[auto_1fr_auto] overflow-hidden",
+          "relative  bg-primary-100 grid grid-rows-[auto_1fr_auto] overflow-hidden",
           sidebar ? "max-xl:lg:w-60 w-80" : "max-xl:lg:w-14 w-20"
         )}
       >
@@ -114,30 +117,38 @@ function Sidebar({
         </div>
         <div className="max-xl:lg:px-2 px-5 pt-3 grid gap-2 auto-rows-min overflow-auto">
           {menu.map(({ label, url, icon }, i) => {
-            const isActive = (selected ?? "") == url;
+            // Active if the current path ends with the menu url
+            const isActive = pathname.endsWith(`/${url}`);
             return (
               <Button
                 key={i + ""}
-                isIconOnly
-                color="primary"
+                isIconOnly={false}
+                color={isActive ? "primary" : "secondary"}
                 variant={isActive ? "solid" : "light"}
                 className={`
                   w-full px-3 inline-flex gap-5 justify-start
                   transition-all duration-200
-                  border
+                  border-l-4
                   ${
                     isActive
-                      ? "border-2 border-blue-500 bg-blue-100 shadow-md text-blue-700"
-                      : "border border-transparent"
+                      ? "border-primary-500 bg-primary-50 text-primary-700 font-bold shadow"
+                      : "border-secondary-300 text-secondary-700"
                   }
-                  hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 hover:scale-105
+                  hover:border-primary-400 hover:bg-primary-100 hover:text-primary-800 hover:scale-105
                   active:scale-95
                   rounded-lg
                 `}
                 as={Link}
                 href={`/${lang}/${url}`}
+                onClick={handleMenuClick}
               >
-                {icon}
+                <span
+                  className={`mr-2 ${
+                    isActive ? "text-primary-700" : "text-secondary-500"
+                  }`}
+                >
+                  {icon}
+                </span>
                 {sidebar && <span className="px-5 capitalize">{label}</span>}
               </Button>
             );
@@ -147,8 +158,9 @@ function Sidebar({
           {isManager && <User sidebar={sidebar} />}
         </div>
       </div>
+      {/* Overlay for mobile to close sidebar when clicking outside */}
       <div
-        onClick={() => setSidebar((prev) => !prev)}
+        onClick={() => setSidebar(false)}
         className="lg:hidden bg-foreground-500/50 backdrop-blur-xs"
       />
     </aside>
@@ -156,7 +168,7 @@ function Sidebar({
 }
 
 function Header({
-  // sidebar,
+  sidebar,
   isManager,
   setSidebar,
 }: {
@@ -187,8 +199,8 @@ function Header({
   );
 }
 function User({ sidebar }: { sidebar: boolean }) {
-  const pathname = usePathname() ?? "",
-    [, lang] = pathname.split("/");
+  const pathname = usePathname() ?? "";
+  const [, lang] = pathname.split("/");
 
   return (
     <Dropdown className="overflow-hidden">
@@ -196,9 +208,9 @@ function User({ sidebar }: { sidebar: boolean }) {
         <div
           className={cn(
             "flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg transition-colors",
-            "bg-gradient-to-r from-purple-700 to-blue-600",
-            "border border-blue-400 hover:border-blue-600",
-            "hover:bg-gradient-to-r hover:from-purple-800 hover:to-blue-700"
+            "bg-gradient-to-r from-primary-600 to-secondary-700",
+            "border border-primary-400 hover:border-primary-600",
+            "hover:bg-gradient-to-r hover:from-primary-700 hover:to-secondary-800"
           )}
         >
           <UserIcon className="size-5 text-white" />
