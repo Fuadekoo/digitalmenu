@@ -160,16 +160,19 @@ function Page() {
                   key={item.id}
                   className="flex-shrink-0 w-full h-full relative"
                 >
-                  <img
-                    src={`/api/filedata/${item.photo}`}
-                    alt={item.title ?? "Promotion"}
-                    className="object-cover w-full h-full rounded-t-xl"
-                    loading="lazy"
+                  <Image
+                  src={`/api/filedata/${item.photo}`}
+                  alt={item.title ?? "Promotion"}
+                  fill
+                  className="object-cover w-full h-full rounded-t-xl"
+                  style={{ objectFit: "cover" }}
+                  loading="lazy"
+                  sizes="(max-width: 768px) 100vw, 600px"
                   />
                   <div className="absolute inset-0 bg-black/30" />
                   <div className="absolute bottom-4 left-4 text-white">
-                    <h3 className="text-xl font-bold">{item.title}</h3>
-                    <p className="text-sm">{item.description}</p>
+                  <h3 className="text-xl font-bold">{item.title}</h3>
+                  <p className="text-sm">{item.description}</p>
                   </div>
                 </div>
               ))}
@@ -219,18 +222,20 @@ function Page() {
                   onClick={() => setSelectedCategoryId(cat.id)}
                   className="flex-shrink-0 flex flex-col items-center w-24 gap-2 text-center cursor-pointer"
                 >
-                  <img
-                    src={
-                      cat.photo
-                        ? `/api/filedata/${cat.photo}`
-                        : "/default-category.png"
-                    }
-                    alt={cat.cname}
-                    className="w-20 h-20 object-cover rounded-full shadow-md"
-                    loading="lazy"
+                  <Image
+                  src={
+                    cat.photo
+                    ? `/api/filedata/${cat.photo}`
+                    : "/default-category.png"
+                  }
+                  alt={cat.cname}
+                  width={80}
+                  height={80}
+                  className="w-20 h-20 object-cover rounded-full shadow-md"
+                  loading="lazy"
                   />
                   <span className="text-sm font-medium text-gray-700">
-                    {cat.cname}
+                  {cat.cname}
                   </span>
                 </div>
               ))}
@@ -299,28 +304,31 @@ function Page() {
             ))
           ) : allFoodData && allFoodData.length > 0 ? (
             allFoodData.map((item) => (
-              <div
+                <div
                 key={item.id}
                 className="bg-white rounded-xl shadow-md flex flex-col"
-              >
-                <img
+                >
+                <Image
                   src={`/api/filedata/${item.photo}`}
                   alt={item.name}
+                  width={400}
+                  height={128}
                   className="w-full h-32 object-cover rounded-t-xl"
+                  style={{ objectFit: "cover" }}
                   loading="lazy"
                 />
                 <div className="p-3 flex-grow flex flex-col justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-800 truncate">
-                      {item.name}
-                    </h3>
-                    <p className="text-lg font-bold text-primary-600">
-                      ${item.price.toFixed(2)}
-                    </p>
+                  <h3 className="font-semibold text-gray-800 truncate">
+                    {item.name}
+                  </h3>
+                  <p className="text-lg font-bold text-primary-600">
+                    ${item.price.toFixed(2)}
+                  </p>
                   </div>
                   <AddToCartButton item={item} />
                 </div>
-              </div>
+                </div>
             ))
           ) : (
             <EmptyState message="No food found." />
