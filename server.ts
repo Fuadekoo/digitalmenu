@@ -336,7 +336,18 @@ app
     expressApp.use((req, res) => handler(req, res));
 
     const httpServer = createServer(expressApp);
-    const io = new Server(httpServer, { pingTimeout: 60000 });
+    const io = new Server(httpServer, {
+      cors: {
+        origin: [
+          "http://194.238.16.146",
+          "http://194.238.16.146:5000",
+          "http://localhost:5000",
+        ],
+        methods: ["GET", "POST"],
+        credentials: true,
+      },
+      pingTimeout: 60000,
+    });
 
     io.use(async (socket, next) => {
       socket.data.id = socket.handshake.auth.id;
