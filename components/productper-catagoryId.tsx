@@ -72,8 +72,12 @@ function ProductPerCategoryId({
 
   return (
     <div>
-      <button onClick={onBack}>
-        <ArrowLeft /> <span>Back</span>
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400"
+      >
+        <ArrowLeft size={20} />
+        <span className="font-medium">Back</span>
       </button>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
         {isLoadingProducts ? (
