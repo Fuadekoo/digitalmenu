@@ -42,7 +42,9 @@ export default function UserLayout({
           setSidebar={setSidebar}
           isManager={isManager}
         />
-        <div className="p-2 rounded-xl overflow-y-auto grid">{children}</div>
+        <div className="m-2 w-dvw rounded-xl overflow-y-auto grid">
+          {children}
+        </div>
       </div>
     </div>
   );
