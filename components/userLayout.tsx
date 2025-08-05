@@ -168,7 +168,6 @@ function Sidebar({
 }
 
 function Header({
-  sidebar,
   isManager,
   setSidebar,
 }: {
