@@ -13,6 +13,7 @@ import {
 import { sendNotificationToGuest } from "@/actions/common/webpush";
 import { useSocket } from "@/components/SocketProvider";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 interface OrderItem {
   id: string | number;
@@ -145,7 +146,7 @@ function Page() {
       socket.off("order_confirmed_success", handleOrderConfirmedSuccess);
       socket.off("order_error", handleOrderError);
     };
-  }, [socket, refreshOrders, isApproving]);
+  }, [socket, refreshOrders, isApproving, orderData?.data]);
 
   const handleApproveOrder = (id: string | number) => {
     if (!socket) {
@@ -178,8 +179,14 @@ function Page() {
     ),
     key: order.id?.toString(),
     id: order.id?.toString(),
-    tNumber: order.table?.tNumber !== undefined && order.table?.tNumber !== null ? order.table.tNumber.toString() : "",
-    roomNumber: order.table?.roomNumber !== undefined && order.table?.roomNumber !== null ? order.table.roomNumber.toString() : "",
+    tNumber:
+      order.table?.tNumber !== undefined && order.table?.tNumber !== null
+        ? order.table.tNumber.toString()
+        : "",
+    roomNumber:
+      order.table?.roomNumber !== undefined && order.table?.roomNumber !== null
+        ? order.table.roomNumber.toString()
+        : "",
   }));
 
   const columns: ColumnDef[] = [
@@ -307,11 +314,15 @@ function Page() {
                   <li key={item.id} className="py-2 border-b">
                     Product Name: {item.name}, Quantity: {item.quantity}, Price:
                     ${item.price}
-                    <img
-                      src={`/api/filedata/${item.photo}`}
-                      alt={item.productId}
-                      className="w-30 h-30 object-cover rounded mt-2"
-                    />
+                    <div className="mt-2">
+                      <Image
+                        src={`/api/filedata/${item.photo}`}
+                        alt={item.productId}
+                        width={120}
+                        height={120}
+                        className="object-cover rounded"
+                      />
+                    </div>
                   </li>
                 ))}
               </ul>

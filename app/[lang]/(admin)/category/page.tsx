@@ -15,6 +15,7 @@ import { categorySchema } from "@/lib/zodSchema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 interface CategoryItem {
   id: string | number;
@@ -343,10 +344,13 @@ function CategoryList() {
                       <span className="text-xs text-gray-500 block text-center mb-1">
                         Preview
                       </span>
-                      <img
+                      <Image
                         src={photoValue}
                         alt="Category preview"
                         className="max-h-40 rounded mx-auto"
+                        width={160}
+                        height={160}
+                        style={{ objectFit: "contain" }}
                       />
                     </div>
                   )}

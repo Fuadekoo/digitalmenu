@@ -16,6 +16,7 @@ import { z } from "zod";
 import { promotionSchema } from "@/lib/zodSchema";
 import { Loader2 } from "lucide-react";
 import { sendNotificationToAll } from "@/actions/common/webpush";
+import Image from "next/image";
 
 type Promotion = z.infer<typeof promotionSchema> & {
   id: string;
@@ -150,6 +151,22 @@ function SettingsPage() {
     }
   };
 
+  // --- Table Actions ---
+  const handleDelete = (id: string) => {
+    if (window.confirm("Are you sure you want to delete this promotion?")) {
+      executeDelete(id);
+    }
+  };
+
+  const openEditModal = (item: Promotion) => {
+    setEditPromotion(item);
+    setValue("title", item.title);
+    setValue("description", item.description);
+    setValue("photo", item.photo);
+    setImagePreview(item.photo || null);
+    setShowModal(true);
+  };
+
   // --- Table Columns ---
   const columns: ColumnDef[] = useMemo(
     () => [
@@ -166,20 +183,21 @@ function SettingsPage() {
       },
       { key: "title", label: "Title" },
       { key: "description", label: "Description" },
-      {
-        key: "photo",
-        label: "Proof",
-        renderCell: (item) =>
-          item.photo ? (
-            <img
-              src={item.photo}
-              alt="Promotion"
-              className="h-12 w-12 object-cover rounded"
-            />
-          ) : (
-            <span className="text-gray-400">No image</span>
-          ),
-      },
+      // {
+      //   key: "photo",
+      //   label: "Proof",
+      //   renderCell: (item) =>
+      //     item.photo ? (
+      //       <img
+      //         src={item.photo}
+      //         alt="Promotion"
+      //         className="h-12 w-12 object-cover rounded"
+      //       />
+      //     ) : (
+      //       <span className="text-gray-400">No image</span>
+      //     ),
+      // },
+      { key: "photo", label: "Proof" },
       {
         key: "createdAt",
         label: "Created At",
@@ -214,24 +232,8 @@ function SettingsPage() {
         ),
       },
     ],
-    [rows, page, pageSize, isLoadingDelete]
+    [rows, page, pageSize, isLoadingDelete, handleDelete, openEditModal]
   );
-
-  // --- Table Actions ---
-  const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this promotion?")) {
-      executeDelete(id);
-    }
-  };
-
-  const openEditModal = (item: Promotion) => {
-    setEditPromotion(item);
-    setValue("title", item.title);
-    setValue("description", item.description);
-    setValue("photo", item.photo);
-    setImagePreview(item.photo || null);
-    setShowModal(true);
-  };
 
   const openAddModal = () => {
     setEditPromotion(null);
@@ -332,10 +334,13 @@ function SettingsPage() {
               </div>
               {imagePreview && !isConvertingImage && (
                 <div className="mt-2 border rounded-md p-2">
-                  <img
+                  <Image
                     src={imagePreview}
                     alt="Preview"
                     className="max-h-40 rounded mx-auto"
+                    width={160}
+                    height={160}
+                    style={{ objectFit: "contain" }}
                   />
                 </div>
               )}

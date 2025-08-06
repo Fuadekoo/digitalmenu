@@ -78,7 +78,7 @@ const QrScanner = () => {
         // console.error("Failed to clear html5-qrcode scanner.", error);
       });
     };
-  }, [router, guestId]);
+  }, [router, guestId, scanAction]);
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
