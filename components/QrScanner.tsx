@@ -64,7 +64,7 @@ const QrScanner = () => {
       await scanAction(guestId, decodedText);
     };
 
-    const onScanFailure = (error?: any) => {
+    const onScanFailure = (error: string) => {
       // Optional: Handle scan failure (like camera errors)
       console.error("QR scan failure:", error); // <-- Log scan failure
       setErrorMessage("Failed to scan QR code. Please try again.");
