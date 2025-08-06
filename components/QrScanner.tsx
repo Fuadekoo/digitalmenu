@@ -64,7 +64,7 @@ const QrScanner = () => {
       await scanAction(guestId, decodedText);
     };
 
-    const onScanFailure = (error: string) => {
+    const onScanFailure = () => {
       // Optional: Handle scan failure (like camera errors)
       // console.error("QR scan failure:", error); // <-- Log scan failure
       setErrorMessage("Failed to scan QR code. Please try again.");
@@ -74,7 +74,7 @@ const QrScanner = () => {
     scanner.render(onScanSuccess, onScanFailure);
 
     return () => {
-      scanner.clear().catch((error) => {
+      scanner.clear().catch(() => {
         // console.error("Failed to clear html5-qrcode scanner.", error);
       });
     };
