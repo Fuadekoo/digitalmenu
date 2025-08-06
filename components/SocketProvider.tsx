@@ -33,7 +33,7 @@ export function SocketProvider({
     if (!userId && !tableId) return null;
 
     const socketUrl =
-      process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
+      process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:4000";
     if (!socketUrl) {
       console.error("NEXT_PUBLIC_SOCKET_URL environment variable is not set");
       return null; // or you can throw an error

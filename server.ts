@@ -314,7 +314,7 @@ async function handleDisconnect(socket: Socket) {
 process.loadEnvFile(".env");
 const hostname = process.env.HOSTNAME || "localhost",
   // const hostname = "localhost",
-  port = parseInt(process.env.PORT || "5000", 10),
+  port = parseInt(process.env.PORT || "4000", 10),
   dev = process.env.NODE_ENV !== "production",
   app = next({ dev, hostname, port, turbo: true });
 
@@ -338,11 +338,7 @@ app
     const httpServer = createServer(expressApp);
     const io = new Server(httpServer, {
       cors: {
-        origin: [
-          "http://194.238.16.146",
-          "http://194.238.16.146:5000",
-          "http://localhost:5000",
-        ],
+        origin: ["*"],
         methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true,
       },
