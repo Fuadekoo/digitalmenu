@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Scan from "@/components/QrScanner";
+import NavbarComponent from "@/components/navbar";
 // import PushNotificationManager from "@/components/PushNotificationManager";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -57,6 +58,7 @@ function InstallPrompt() {
 function Page() {
   return (
     <div>
+      <NavbarComponent />
       <Scan />
       <InstallPrompt />
       {/* <PushNotificationManager /> */}

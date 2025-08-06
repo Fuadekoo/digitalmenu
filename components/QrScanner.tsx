@@ -17,7 +17,7 @@ const QrScanner = () => {
   const [, scanAction, isLoadingScan] = useAction(scan, [
     ,
     (response) => {
-      console.log("Scan response:", response); // <-- Log backend response
+      // console.log("Scan response:", response); // <-- Log backend response
       if (response && response.success) {
         addToast({
           title: "Scan Result",
@@ -30,7 +30,7 @@ const QrScanner = () => {
           setErrorMessage("No redirect URL provided.");
         }
       } else {
-        console.error("Scan failed:", response); // <-- Log error details
+        // console.error("Scan failed:", response); // <-- Log error details
         setErrorMessage(response?.message || "Failed to process scan.");
       }
     },
@@ -55,7 +55,7 @@ const QrScanner = () => {
     );
 
     const onScanSuccess = async (decodedText: string) => {
-      console.log("QR code scanned:", decodedText); // <-- Log scanned text
+      // console.log("QR code scanned:", decodedText); // <-- Log scanned text
       scanner.clear();
       setScanResult(decodedText);
       setErrorMessage(null); // Clear previous error
@@ -66,7 +66,7 @@ const QrScanner = () => {
 
     const onScanFailure = (error: string) => {
       // Optional: Handle scan failure (like camera errors)
-      console.error("QR scan failure:", error); // <-- Log scan failure
+      // console.error("QR scan failure:", error); // <-- Log scan failure
       setErrorMessage("Failed to scan QR code. Please try again.");
       setScanResult(null);
     };
@@ -75,7 +75,7 @@ const QrScanner = () => {
 
     return () => {
       scanner.clear().catch((error) => {
-        console.error("Failed to clear html5-qrcode scanner.", error);
+        // console.error("Failed to clear html5-qrcode scanner.", error);
       });
     };
   }, [router, guestId]);
