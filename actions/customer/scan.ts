@@ -1,6 +1,7 @@
 "use server";
 import prisma from "@/lib/db";
 import { customerAuth } from "@/actions/customer/clientauth";
+// import { env } from "process";
 
 /**
  * Checks if a guest can be redirected to a new table after a QR scan.
@@ -22,8 +23,14 @@ export async function scan(guestId: string, decodedText: string) {
     domain = url.hostname;
     lang = url.pathname.split("/")[1] || "en";
 
+    console.log("domain  fom backend", domain);
+
+    const DOMAIN_NAME =
+      process.env.DOMAIN_NAME?.replace(/^https?:\/\//, "") || "";
+    console.log("Domain from env:", DOMAIN_NAME);
+
     // Check if the URL is valid and contains the expected structure
-    if (domain !== "localhost") {
+    if (domain !== DOMAIN_NAME) {
       return {
         success: false,
         message: "Invalid QR code format or domain.",
