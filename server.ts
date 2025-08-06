@@ -314,7 +314,7 @@ async function handleDisconnect(socket: Socket) {
 process.loadEnvFile(".env");
 const hostname = process.env.HOSTNAME || "localhost",
   // const hostname = "localhost",
-  port = parseInt(process.env.PORT || "4000", 10),
+  port = parseInt(process.env.PORT || "5000", 10),
   dev = process.env.NODE_ENV !== "production",
   app = next({ dev, hostname, port, turbo: true });
 
