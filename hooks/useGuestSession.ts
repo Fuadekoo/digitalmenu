@@ -21,8 +21,8 @@ const setCookie = (name: string, value: string, days = 365) => {
 
 const COOKIE_NAME = "guest_session_id";
 
-const useGuestSession = (): string | null => {
-  const [guestId, setGuestId] = useState<string | null>(null);
+const useGuestSession = (): string => {
+  const [guestId, setGuestId] = useState<string>("");
 
   useEffect(() => {
     let id = getCookie(COOKIE_NAME);

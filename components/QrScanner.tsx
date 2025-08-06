@@ -58,7 +58,7 @@ const QrScanner = () => {
       setErrorMessage(null); // Clear previous error
 
       // Call the scan action with guestId and decoded text
-      scanAction(guestId ?? "guest_hifi0sjv31753482126016", decodedText);
+      await scanAction(guestId, decodedText);
     };
 
     const onScanFailure = () => {
@@ -78,7 +78,9 @@ const QrScanner = () => {
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
-      <h1 className="text-2xl font-bold mb-4">Scan QR Code</h1>
+      <h1 className="text-2xl font-bold mb-4 text-blue-700">
+        Welcome To Digital Menu
+      </h1>
       {scanResult ? (
         <div className="text-center">
           {isLoadingScan ? (
