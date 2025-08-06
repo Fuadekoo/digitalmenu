@@ -34,8 +34,8 @@ const NavbarComponent: React.FC = () => {
       </NavbarContent>
       <NavbarContent justify="end">
         <NavbarItem>
-          <Button as={Link} color="primary" href="/login" variant="flat">
-            Login
+          <Button as={Link} color="primary" href="/en/signin" variant="flat">
+            Sign In
           </Button>
         </NavbarItem>
       </NavbarContent>

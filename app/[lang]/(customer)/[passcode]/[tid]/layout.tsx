@@ -27,7 +27,7 @@ export default async function Layout({
     },
     {
       label: "My Orders",
-      url: `${passcode}/${tid}/myorders`,
+      url: `${passcode}/${tid}/myOrders`,
       icon: <ShoppingBasket size={18} />,
     },
     {

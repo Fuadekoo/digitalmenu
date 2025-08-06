@@ -23,7 +23,7 @@ const FeatureItem = ({
 
 function Page() {
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 h-dvh overflow-y-auto">
       {/* --- Logo --- */}
       {/* <div className="flex justify-center pt-8 pb-2">
         <Image
