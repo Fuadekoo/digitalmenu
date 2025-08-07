@@ -160,12 +160,13 @@ function Page() {
               style={{ transform: `translateX(-${activeIndex * 100}%)` }}
             >
               {promotionData.map((item) => (
-                <div key={item.id} className="flex-shrink-0  h-full relative">
+                <div key={item.id} className="flex-shrink-0 h-full relative">
                   <Image
                     src={`/api/filedata/${item.photo}`}
                     alt={item.title ?? "Promotion"}
-                    fill
-                    className="object-cover  h-full rounded-t-xl"
+                    width={600}
+                    height={240}
+                    className="object-cover h-full w-full rounded-t-xl"
                     style={{ objectFit: "cover" }}
                     loading="lazy"
                     sizes="(max-width: 768px) 100vw, 600px"
