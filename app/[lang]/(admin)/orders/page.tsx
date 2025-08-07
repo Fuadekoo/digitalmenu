@@ -4,12 +4,7 @@ import useAction from "@/hooks/useActions";
 import CustomTable from "@/components/custom-table";
 import { Button } from "@heroui/react";
 import { addToast } from "@heroui/toast";
-import {
-  getOrder,
-  getOrderItems,
-  // rejectOrder, // No longer needed
-  rejectOrder,
-} from "@/actions/admin/order";
+import { getOrder, getOrderItems, rejectOrder } from "@/actions/admin/order";
 import { sendNotificationToGuest } from "@/actions/common/webpush";
 import { useSocket } from "@/components/SocketProvider";
 import { Loader2 } from "lucide-react";
@@ -116,12 +111,14 @@ function Page() {
         description: "Order approved successfully.",
       });
       refreshOrders();
-      if (isApproving === data.orderId) {
+      if (isApproving === data.orderId.toString()) {
         setIsApproving(null);
       }
 
       // Find the order to get guestId
-      const order = (orderData?.data || []).find((o) => o.id === data.orderId);
+      const order = (orderData?.data || []).find(
+        (o) => o.id.toString() === data.orderId.toString()
+      );
       if (order?.guestId) {
         await sendNotificationToGuest(
           `Your order (${order.orderCode}) has been confirmed!`,
@@ -139,11 +136,11 @@ function Page() {
       setIsApproving(null);
     };
 
-    socket.on("order_confirmed_success", handleOrderConfirmedSuccess);
+    socket.on("confirm_order", handleOrderConfirmedSuccess);
     socket.on("order_error", handleOrderError);
 
     return () => {
-      socket.off("order_confirmed_success", handleOrderConfirmedSuccess);
+      socket.off("confirm_order", handleOrderConfirmedSuccess);
       socket.off("order_error", handleOrderError);
     };
   }, [socket, refreshOrders, isApproving, orderData?.data]);
