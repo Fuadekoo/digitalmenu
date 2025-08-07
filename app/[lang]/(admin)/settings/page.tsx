@@ -33,8 +33,8 @@ type ColumnDef = {
 function SettingsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isConvertingImage, setIsConvertingImage] = useState(false);
+  const [photoValue, setPhotoValue] = useState<string | null>(null); // Base64 or URL
+  const [isConvertingImage, setIsConvertingImage] = useState(false); // Loading state
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -86,7 +86,7 @@ function SettingsPage() {
       refreshPromotions();
       setShowModal(false);
       setEditPromotion(null);
-      setImagePreview(null);
+      setPhotoValue(null);
       reset();
     } else {
       addToast({
@@ -127,27 +127,35 @@ function SettingsPage() {
   ]);
 
   // --- File/Image Handling ---
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setIsConvertingImage(true);
-      setImagePreview(null);
-      setValue("photo", "", { shouldValidate: false });
+      setValue("photo", "", { shouldValidate: false }); // Clear previous photo immediately
+      setPhotoValue(null); // Clear preview
 
       try {
         const fileBuffer = await file.arrayBuffer();
         const base64String = Buffer.from(fileBuffer).toString("base64");
-        const dataUrl = `data:${file.type};base64,${base64String}`;
-        setValue("photo", dataUrl, { shouldValidate: true });
-        setImagePreview(dataUrl);
-      } catch {
+        // The backend expects a raw base64 string.
+        // If it expected a data URL, you'd prepend `data:${file.type};base64,`
+        setValue("photo", base64String, { shouldValidate: true });
+        setPhotoValue(`data:image/jpeg;base64,${base64String}`); // Set preview
+      } catch (error) {
+        console.error("Error converting file to base64:", error);
         addToast({
           title: "Image Error",
           description: "Could not process the file.",
         });
+        setValue("photo", "", { shouldValidate: true }); // Clear on error
+        setPhotoValue(null); // Clear preview
       } finally {
         setIsConvertingImage(false);
       }
+    } else {
+      setValue("photo", "", { shouldValidate: true }); // Clear if no file selected
+      setPhotoValue(null); // Clear preview
     }
   };
 
@@ -163,7 +171,7 @@ function SettingsPage() {
     setValue("title", item.title);
     setValue("description", item.description);
     setValue("photo", item.photo);
-    setImagePreview(item.photo || null);
+    setPhotoValue(item.photo || null);
     setShowModal(true);
   };
 
@@ -238,7 +246,7 @@ function SettingsPage() {
   const openAddModal = () => {
     setEditPromotion(null);
     reset();
-    setImagePreview(null);
+    setPhotoValue(null);
     setShowModal(true);
   };
 
@@ -316,7 +324,8 @@ function SettingsPage() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleFileChange}
+                  {...register("photo", { onChange: handleImageChange })}
+                  // onChange={handleFileChange}
                   className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                   disabled={
                     isConvertingImage ||
@@ -332,10 +341,10 @@ function SettingsPage() {
                   </div>
                 )}
               </div>
-              {imagePreview && !isConvertingImage && (
+              {photoValue && !isConvertingImage && (
                 <div className="mt-2 border rounded-md p-2">
                   <Image
-                    src={imagePreview}
+                    src={photoValue}
                     alt="Preview"
                     className="max-h-40 rounded mx-auto"
                     width={160}

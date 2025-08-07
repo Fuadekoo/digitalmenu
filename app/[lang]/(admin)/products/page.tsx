@@ -408,16 +408,16 @@ function Page() {
                   !isConvertingImage && (
                     <div className="mt-2 border rounded-md p-2">
                       <span className="text-xs text-gray-500 block text-center mb-1">
-                      Preview
+                        Preview
                       </span>
                       <Image
-                      src={photoValue}
-                      alt="Product preview"
-                      className="max-h-40 rounded mx-auto"
-                      width={160}
-                      height={160}
-                      style={{ objectFit: "contain" }}
-                      unoptimized
+                        src={photoValue}
+                        alt="Product preview"
+                        className="max-h-40 rounded mx-auto"
+                        width={160}
+                        height={160}
+                        style={{ objectFit: "contain" }}
+                        unoptimized
                       />
                     </div>
                   )}
