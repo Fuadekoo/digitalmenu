@@ -172,7 +172,7 @@ export async function getTableQRCode(id: string) {
     }
 
     const domainName = process.env.DOMAIN_NAME;
-    const Lang = process.env.LANG || "en";
+    const Lang = "en";
 
     const passcode = await prisma.user.findFirst({
       where: { role: "admin" },
