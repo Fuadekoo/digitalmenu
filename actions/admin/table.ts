@@ -172,6 +172,8 @@ export async function getTableQRCode(id: string) {
     }
 
     const domainName = process.env.DOMAIN_NAME;
+    const Lang = process.env.LANG || "en";
+
     const passcode = await prisma.user.findFirst({
       where: { role: "admin" },
       select: { clientPassCode: true },
@@ -181,7 +183,7 @@ export async function getTableQRCode(id: string) {
       return { message: "Admin passcode not found." };
     }
 
-    return `${domainName}/${passcode.clientPassCode}/${table.id}`;
+    return `${domainName}/${Lang}/${passcode.clientPassCode}/${table.id}`;
   } catch {
     return { message: "Failed to generate QR code" };
   }
