@@ -9,7 +9,7 @@ import {
   createTable,
   updateTable,
 } from "@/actions/admin/table";
-import { Alert, Button } from "@heroui/react";
+import { Button } from "@heroui/react";
 import CustomTable from "@/components/custom-table";
 // import { Button } from "@heroui/react";
 import { addToast } from "@heroui/toast";
