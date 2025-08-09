@@ -188,7 +188,7 @@ function Header({
       </Button>
 
       <div className="flex justify-between items-center w-full">
-        <h1>fuad</h1>
+        <h1>Menu</h1>
         <div className="flex items-center gap-2">
           {isManager ? <AdminSocketConnected /> : <ClientSocketConnected />}
           {isManager ? <NotificationBell /> : <CustomerNotificationHandler />}
