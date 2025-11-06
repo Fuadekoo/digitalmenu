@@ -3,7 +3,7 @@ import { customerAuth } from "@/actions/customer/clientauth";
 import UserLayout from "@/components/userLayout";
 import { redirect } from "next/navigation";
 import { Home, User, ShoppingBasket } from "lucide-react";
-// import LocationPopup from "@/components/LocationPopup";
+import LocationPopup from "@/components/LocationPopup";
 // import Footer from "@/components/footer";
 // import CustomerSocketHandler from "@/components/CustomerSocketHandler";
 import { SocketProvider } from "@/components/SocketProvider";
