@@ -26,7 +26,6 @@ export default function PushNotificationIcon() {
       setIsSupported(true);
       checkSubscription();
     }
-    // eslint-disable-next-line
   }, []);
 
   async function checkSubscription() {

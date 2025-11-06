@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   getPromotions,
   createPromotion,
@@ -60,20 +60,23 @@ function SettingsPage() {
   );
 
   // Convert all row fields to string for CustomTable compatibility
-  const rows =
-    (promotionData?.data || []).map((item) => ({
-      ...item,
-      id: String(item.id),
-      title: item.title ?? "",
-      description: item.description ?? "",
-      photo: item.photo ?? "",
-      createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : "",
-      updatedAt: item.updatedAt
-        ? typeof item.updatedAt === "string"
-          ? item.updatedAt
-          : new Date(item.updatedAt).toISOString()
-        : "",
-    })) || [];
+  const rows = useMemo(
+    () =>
+      (promotionData?.data || []).map((item) => ({
+        ...item,
+        id: String(item.id),
+        title: item.title ?? "",
+        description: item.description ?? "",
+        photo: item.photo ?? "",
+        createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : "",
+        updatedAt: item.updatedAt
+          ? typeof item.updatedAt === "string"
+            ? item.updatedAt
+            : new Date(item.updatedAt).toISOString()
+          : "",
+      })) || [],
+    [promotionData]
+  );
 
   // --- Actions ---
   const handleActionCompletion = (
@@ -160,20 +163,26 @@ function SettingsPage() {
   };
 
   // --- Table Actions ---
-  const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this promotion?")) {
-      executeDelete(id);
-    }
-  };
+  const handleDelete = useCallback(
+    (id: string) => {
+      if (window.confirm("Are you sure you want to delete this promotion?")) {
+        executeDelete(id);
+      }
+    },
+    [executeDelete]
+  );
 
-  const openEditModal = (item: Promotion) => {
-    setEditPromotion(item);
-    setValue("title", item.title);
-    setValue("description", item.description);
-    setValue("photo", item.photo);
-    setPhotoValue(item.photo || null);
-    setShowModal(true);
-  };
+  const openEditModal = useCallback(
+    (item: Promotion) => {
+      setEditPromotion(item);
+      setValue("title", item.title);
+      setValue("description", item.description);
+      setValue("photo", item.photo);
+      setPhotoValue(item.photo || null);
+      setShowModal(true);
+    },
+    [setValue]
+  );
 
   // --- Table Columns ---
   const columns: ColumnDef[] = useMemo(

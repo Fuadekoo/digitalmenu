@@ -127,7 +127,6 @@ export default function CustomerNotificationBell() {
       setIsSupported(true);
       checkSubscription();
     }
-    // eslint-disable-next-line
   }, []);
 
   async function checkSubscription() {
